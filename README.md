@@ -9,7 +9,7 @@
    ```
 
 2. **Connect to Netlify:**
-   - Login to Netlify: https://app.netlify.com
+   - Login to Netlify: https://modrenportfolio-ali.netlify.app/
    - Click "New site from Git"
    - Choose GitHub
    - Select your repository
