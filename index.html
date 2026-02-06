@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ali Raza - Portfolio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-brand">Ali<span>-dev</span></a>
+            <button class="navbar-toggle" aria-label="Toggle navigation">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            <ul class="navbar-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="social-icons-nav">
+                <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/ali-raza-455102292/" target="_blank" rel="noopener" title="LinkedIn">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://www.freelancer.pk/u/BSCSAliRaza176?frm=BSCSAliRaza176&sb=t" target="_blank" rel="noopener" title="Freelancer">
+                    <i class="fas fa-briefcase"></i>
+                </a>
+                <button class="color-picker-btn" id="colorPickerBtn" title="Change Theme Color">
+                    <i class="fas fa-palette"></i>
+                </button>
+            </div>
+            
+            <!-- Color Picker Modal -->
+            <div class="color-picker-modal" id="colorPickerModal">
+                <div class="color-picker-content">
+                    <h3>Choose Theme Color</h3>
+                    <div class="color-presets">
+                        <button class="preset-color" data-color="#8B0000" style="background: #8B0000;" title="Red (Default)"></button>
+                        <button class="preset-color" data-color="#0066CC" style="background: #0066CC;" title="Blue"></button>
+                        <button class="preset-color" data-color="#00AA00" style="background: #00AA00;" title="Green"></button>
+                        <button class="preset-color" data-color="#FF6600" style="background: #FF6600;" title="Orange"></button>
+                        <button class="preset-color" data-color="#9900CC" style="background: #9900CC;" title="Purple"></button>
+                        <button class="preset-color" data-color="#CC0066" style="background: #CC0066;" title="Pink"></button>
+                        <button class="preset-color" data-color="#FFD700" style="background: #FFD700;" title="Gold"></button>
+                        <button class="preset-color" data-color="#00CED1" style="background: #00CED1;" title="Cyan"></button>
+                    </div>
+                    <div class="custom-color-picker">
+                        <label for="customColor">Custom Color:</label>
+                        <input type="color" id="customColor" value="#8B0000">
+                        <button class="apply-custom-btn" id="applyCustomBtn">Apply</button>
+                    </div>
+                    <button class="close-modal-btn" id="closeModalBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-content">
+            <p class="hero-greeting">Hello, I'm Ali 👋</p>
+            <h1 class="hero-title">
+                <span class="dynamic-text"></span>
+            </h1>
+            <p class="hero-subtitle">Expanding skills and discovering new ways to innovate</p>
+            <a href="./Ali razacv1.docx" download="Ali_Raza_CV.pdf" class="btn btn-primary">DOWNLOAD CV</a>
+            <div class="social-icons">
+                <a href="https://www.linkedin.com/in/ali-raza-455102292/" target="_blank" rel="noopener" title="LinkedIn">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://wa.me/923230917176" target="_blank" rel="noopener" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://www.freelancer.pk/u/BSCSAliRaza176?frm=BSCSAliRaza176&sb=t" target="_blank" rel="noopener" title="Freelancer">
+                    <i class="fas fa-briefcase"></i>
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="avatar-container">
+                <div class="avatar-glow"></div>
+                <div class="avatar-circle">
+                    <img src="./assets/images/WhatsApp Image 2026-02-06 at 9.23.15 PM.jpeg" alt="Ali Raza" class="avatar-image">
+                </div>
+                <!-- Floating Tech Icons with Logos - Orbiting around avatar -->
+                <div class="orbit-icon orbit-1">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" />
+                </div>
+                <div class="orbit-icon orbit-2">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" />
+                </div>
+                <div class="orbit-icon orbit-3">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" />
+                </div>
+                <div class="orbit-icon orbit-4">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" />
+                </div>
+                <div class="orbit-icon orbit-5">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" />
+                </div>
+                <div class="orbit-icon orbit-6">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" />
+                </div>
+                <div class="orbit-icon orbit-7">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" alt="MongoDB" />
+                </div>
+                <div class="orbit-icon orbit-8">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" alt="Express" style="filter: invert(1);" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="about-description">
+                        I'm Ali Raza, a Computer Science student at COMSATS University with hands-on 
+                        experience in full-stack development. Currently working as a Frontend Developer 
+                        at Ayraxs Technologies Inc, where I build modern web applications using React.js 
+                        and TailwindCSS. I specialize in creating scalable e-commerce platforms, database 
+                        systems, and user-focused interfaces. My passion lies in transforming business 
+                        challenges into efficient engineering solutions.
+                    </p>
+                    <h3 class="skills-title">Skills & Technologies</h3>
+                    <div class="skills-grid">
+                        <span class="skill-tag">HTML5</span>
+                        <span class="skill-tag">CSS3</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">React 19</span>
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Express</span>
+                        <span class="skill-tag">MongoDB</span>
+                        <span class="skill-tag">Git</span>
+                        <span class="skill-tag">Responsive Design</span>
+                        <span class="skill-tag">TailwindCSS</span>
+                        <span class="skill-tag">Zustand</span>
+                        <span class="skill-tag">React Router</span>
+                        <span class="skill-tag">REST API</span>
+                        <span class="skill-tag">C++</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">MySQL</span>
+                        <span class="skill-tag">OOP</span>
+                    </div>
+                </div>
+                <div class="about-code">
+                    <div class="code-block">
+                        <pre><code>const developer = {
+  name: 'Ali Raza',
+  role: 'Computer Science Student',
+  company: 'Ayraxs Technologies Inc',
+  position: 'Frontend Developer',
+  passion: 'Expanding skills and discovering
+  new ways to innovate',
+  location: 'Vehari, Pakistan',
+  education: 'COMSATS University',
+  cgpa: 3.0,
+  experience: {
+    frontend: ['React 19', 'TailwindCSS'],
+    backend: ['Node.js', 'Express', 'MongoDB'],
+    languages: ['JavaScript', 'C++', 'Python'],
+    databases: ['MySQL', 'MongoDB']
+  }
+};</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="projects-section">
+        <div class="container">
+            <h2 class="section-title">My Projects</h2>
+            <div class="projects-grid">
+                <!-- Project 1 - Student Portal -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/student-portal.png" alt="Student Portal" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/667eea/ffffff?text=Student+Portal'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Student Portal Dashboard</h3>
+                        <p class="project-description">
+                            A responsive student dashboard featuring course registration, grade viewing, 
+                            and announcements. Includes form validation, dynamic filtering, and a clean, 
+                            mobile-friendly UI.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">HTML</span>
+                            <span class="tag">CSS</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Responsive</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://studentportal-creponne-8d980e.netlify.app/" target="_blank" rel="noopener" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 2 - Futuristic Portfolio -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/futuristic-portfolio.png" alt="Futuristic Portfolio" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/f093fb/ffffff?text=Futuristic+Portfolio'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Futuristic Portfolio</h3>
+                        <p class="project-description">
+                            A design-focused portfolio featuring glassmorphism effects, smooth scroll 
+                            animations, and interactive micro-interactions. Fully responsive with modern 
+                            web design principles.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">HTML</span>
+                            <span class="tag">CSS</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Animations</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://portfoliofutuistic-ganache-4571e3.netlify.app/" target="_blank" rel="noopener" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 3 - Minimalist Portfolio -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/minimalist-portfolio.png" alt="Minimalist Portfolio" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/4facfe/ffffff?text=Minimalist+Portfolio'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Minimalist Portfolio</h3>
+                        <p class="project-description">
+                            A single-page portfolio optimized for fast performance and clean UI. 
+                            Features project showcases and validated contact form with professional 
+                            design aesthetics.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">HTML</span>
+                            <span class="tag">CSS</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Performance</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://calm-dodol-a21aca.netlify.app/" target="_blank" rel="noopener" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 4 - Simple Portfolio -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/simple-portfolio.png" alt="Simple Portfolio" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/a8edea/333333?text=Simple+Portfolio'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Simple Portfolio</h3>
+                        <p class="project-description">
+                            A clean and straightforward portfolio website showcasing front-end creativity. 
+                            Fully responsive design with smooth navigation and modern web development practices.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">HTML</span>
+                            <span class="tag">CSS</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Responsive</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://simpleportfolio-palmier-f4a93b.netlify.app/" target="_blank" rel="noopener" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 5 - MillionVerified Clone -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/millionverified.png" alt="MillionVerified" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/fa709a/ffffff?text=MillionVerified'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">MillionVerified Clone</h3>
+                        <p class="project-description">
+                            Created a copy website focusing on email verification services using HTML, 
+                            JavaScript and TailwindCSS, implementing responsive design principles and 
+                            modern UI practices.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">HTML</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">TailwindCSS</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 6 - Nvysion Platform -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/nvysion-platform.png" alt="Nvysion Platform" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/30cfd0/ffffff?text=Nvysion+Platform'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Nvysion Platform</h3>
+                        <p class="project-description">
+                            A modern, scalable full-stack e-commerce platform for custom printing services. 
+                            Features seamless 4over API integration, real-time pricing engine, and 
+                            comprehensive order management.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">React 19</span>
+                            <span class="tag">Node.js</span>
+                            <span class="tag">MongoDB</span>
+                            <span class="tag">Express</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://nvysion-platform-4cedc1.netlify.app/" target="_blank" rel="noopener" class="btn-link">Live Demo</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 7 - Inventory Management -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/inventory-system.png" alt="Inventory Management" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/a8c0ff/ffffff?text=Inventory+System'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Inventory Management System</h3>
+                        <p class="project-description">
+                            Developed a comprehensive OOP-based inventory application with MySQL 
+                            database integration, implementing CRUD operations, data validation, 
+                            and relational database design principles.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">C++</span>
+                            <span class="tag">MySQL</span>
+                            <span class="tag">OOP</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn-link">View Details</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 8 - Library Database -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <img src="assets/images/library-database.png" alt="Library Database" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/ffecd2/333333?text=Library+Database'">
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Library Database Application</h3>
+                        <p class="project-description">
+                            Created a multi-tier application with strong focus on OOP principles 
+                            (encapsulation, inheritance) and database normalization, featuring search 
+                            functionality and member management.
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">C++</span>
+                            <span class="tag">MySQL</span>
+                            <span class="tag">Database Design</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn-link">View Details</a>
+                            <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" class="btn-link">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <p class="contact-description">
+                        Let's collaborate! I am always open to discussing exciting projects and new opportunities.
+                    </p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>alirazachh176@example.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+92-323-0917176</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Vehari, Pakistan</span>
+                        </div>
+                    </div>
+                    <div class="social-icons-contact">
+                        <a href="https://github.com/chaliraza176" target="_blank" rel="noopener" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/ali-raza-455102292/" target="_blank" rel="noopener" title="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://wa.me/923230917176" target="_blank" rel="noopener" title="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="https://www.freelancer.pk/u/BSCSAliRaza176?frm=BSCSAliRaza176&sb=t" target="_blank" rel="noopener" title="Freelancer">
+                            <i class="fas fa-briefcase"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Your Message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">SEND MESSAGE</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Ali Raza. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

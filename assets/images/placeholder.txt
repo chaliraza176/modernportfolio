@@ -1,0 +1,12 @@
+Place your project screenshots here:
+
+1. student-portal.png
+2. futuristic-portfolio.png
+3. minimalist-portfolio.png
+4. simple-portfolio.png
+5. nvysion-platform.png
+6. millionverified.png
+7. inventory-system.png
+8. library-database.png
+
+Recommended size: 1200x800px or 16:9 aspect ratio
