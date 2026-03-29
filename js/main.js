@@ -416,4 +416,88 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedColor) {
         applyThemeColor(savedColor);
     }
+    
+    // Fetch GitHub Repositories
+    fetchGitHubRepos();
 });
+
+// GitHub Repository Fetcher
+async function fetchGitHubRepos() {
+    const username = 'chaliraza176';
+    const grid = document.getElementById('githubProjectsGrid');
+    
+    if (!grid) return;
+
+    // Show loading spinner
+    grid.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner-icon"></div>
+            <p>Syncing with GitHub repositories...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=12`);
+        const repos = await response.json();
+        
+        if (!Array.isArray(repos)) {
+            throw new Error('Invalid response from GitHub');
+        }
+
+        // List of repo names already shown in the main projects grid (to avoid duplicates)
+        const existingRepos = [
+            'modernportfolio', 
+            'portfolio', 
+            'online-store', 
+            'rock-paper-scissers-game', 
+            'UniqVue-ReactNative-',
+            'Nvysion-Platform',
+            'fluter_project'
+        ].map(n => n.toLowerCase());
+
+        // Filter and sort repos
+        const filteredRepos = repos.filter(repo => {
+            return !existingRepos.includes(repo.name.toLowerCase()) && !repo.fork;
+        }).slice(0, 6);
+        
+        if (filteredRepos.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; opacity: 0.6;">More projects coming soon!</p>';
+            return;
+        }
+
+        grid.innerHTML = ''; // Clear loading spinner
+        
+        filteredRepos.forEach((repo, index) => {
+            const card = document.createElement('div');
+            card.className = 'github-repo-card';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.5s ease ${index * 0.1}s`;
+
+            card.innerHTML = `
+                <div class="repo-header">
+                    <span class="repo-name" title="${repo.name}">${repo.name}</span>
+                    ${repo.language ? `<span class="repo-lang">${repo.language}</span>` : ''}
+                </div>
+                <p class="repo-desc">${repo.description || 'A collection of code and resources exploring modern development practices.'}</p>
+                <div class="repo-stats">
+                    <span><i class="fas fa-star"></i> ${repo.stargazers_count}</span>
+                    <span><i class="fas fa-code-branch"></i> ${repo.forks_count}</span>
+                    <a href="${repo.html_url}" target="_blank" class="repo-link" title="View Source"><i class="fas fa-external-link-alt"></i></a>
+                </div>
+            `;
+            
+            grid.appendChild(card);
+            
+            // Trigger animation
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        });
+    } catch (error) {
+        console.error('Error fetching GitHub repos:', error);
+        grid.innerHTML = '<p style="grid-column: 1/-1; color: var(--accent-color);">Failed to load repositories. Please check back later!</p>';
+    }
+}
+
