@@ -121,11 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const navbar = document.getElementById('navbar');
         if (navbar) {
             if (scrollY > 50) {
-                navbar.style.background = 'rgba(13, 0, 0, 0.98)';
-                navbar.style.boxShadow = '0 2px 20px rgba(220, 20, 60, 0.3)';
+                navbar.classList.add('navbar-scrolled');
             } else {
-                navbar.style.background = 'rgba(13, 0, 0, 0.95)';
-                navbar.style.boxShadow = 'none';
+                navbar.classList.remove('navbar-scrolled');
             }
         }
     });
@@ -167,20 +165,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyThemeColor(baseColor, isInitial = false) {
         const root = document.documentElement;
+        
+        // Define RGB components
         const rgb = hexToRgb(baseColor);
         if (!rgb) return;
 
+        // Calculate shades
         const primaryColor = darkenColor(baseColor, 0.3);
         const secondaryColor = baseColor;
         const accentColor = lightenColor(baseColor, 0.2);
         
+        // Get RGB for the primary (darker) shade
+        const primaryRgb = hexToRgb(primaryColor);
+        
+        // Set CSS Variables on root (html element)
         root.style.setProperty('--primary-color', primaryColor);
+        root.style.setProperty('--primary-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
         root.style.setProperty('--secondary-color', secondaryColor);
+        root.style.setProperty('--secondary-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
         root.style.setProperty('--accent-color', accentColor);
         root.style.setProperty('--border-color', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`);
-        root.style.setProperty('--card-bg', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`);
+        root.style.setProperty('--card-bg', `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)`);
         
-        // Dynamic Styles for specific elements
+        // Dynamic Styles for specific elements that need direct color assignment
         let style = document.getElementById('dynamic-theme-styles');
         if (!style) {
             style = document.createElement('style');
@@ -188,13 +195,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.head.appendChild(style);
         }
         
+        // These are elements that use solid colors or specific logic not easily captured by root vars alone
         style.innerHTML = `
-            .avatar-circle { box-shadow: 0 0 50px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6) !important; }
-            .navbar { box-shadow: 0 2px 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important; }
-            .project-card:hover { border-color: ${secondaryColor} !important; box-shadow: 0 10px 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) !important; }
             .nav-link.active::after { background: ${secondaryColor} !important; }
             .btn-primary { background: ${primaryColor} !important; border-color: ${secondaryColor} !important; }
-            .btn-primary:hover { box-shadow: 0 5px 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5) !important; }
+            .navbar { border-bottom-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) !important; }
+            .social-icons a { border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) !important; }
+            .orbit-icon { border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) !important; }
+            .floating-icon { border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) !important; }
+            .skill-tag { border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) !important; }
+            .project-card:hover { border-color: ${secondaryColor} !important; box-shadow: 0 10px 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) !important; }
+            .avatar-circle { box-shadow: 0 0 50px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5) !important; }
+            .avatar-image, .avatar-placeholder { border-color: ${secondaryColor} !important; }
         `;
         
         localStorage.setItem('themeColor', baseColor);
