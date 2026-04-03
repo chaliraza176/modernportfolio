@@ -1,13 +1,14 @@
 /**
- * Ali Raza - Portfolio Admin JS (SUPABASE MAGIC LINK VERSION)
- * No passwords needed. Just click the link in your email.
+ * Ali Raza - Portfolio Admin JS (HYBRID VERSION: MAGIC LINK + PASSWORD)
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
     const loginScreen = document.getElementById('loginScreen');
     const adminPanel = document.getElementById('adminPanel');
-    const magicForm = document.getElementById('magicForm');
     const statusMsg = document.getElementById('statusMsg');
+    
+    const magicForm = document.getElementById('magicForm');
+    const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
     
     const adminForm = document.getElementById('adminForm');
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditing = false;
     const ADMIN_EMAIL = 'alirazachh176@gmail.com';
 
-    // --- 1. Auth Management (Magic Link) ---
+    // --- 1. Auth Management ---
     const checkUser = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user.email === ADMIN_EMAIL) {
@@ -38,33 +39,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Magic Link Submission
     if (magicForm) {
         magicForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('magicEmail').value.trim();
-            
-            if (email !== ADMIN_EMAIL) {
-                alert('Restricted: Only the site owner can request a Magic Link.');
-                return;
-            }
-
-            statusMsg.textContent = '⏱ Sending Magic Link... Please wait.';
-            statusMsg.style.display = 'block';
-
+            const email = ADMIN_EMAIL;
+            statusMsg.textContent = '⏱ Sending Magic Link...';
             const { error } = await supabaseClient.auth.signInWithOtp({
                 email: email,
-                options: {
-                    // This will redirect you back to this admin page after you click the link in Gmail
-                    emailRedirectTo: window.location.href 
-                }
+                options: { emailRedirectTo: window.location.href }
             });
-
             if (error) {
                 statusMsg.textContent = '❌ Error: ' + error.message;
-                statusMsg.style.color = '#ff4444';
             } else {
-                statusMsg.textContent = '📧 Success! Magic Link sent to your Gmail inbox. Check your email and click the link to login.';
-                statusMsg.style.color = 'var(--secondary-color)';
+                statusMsg.textContent = '📧 Success! Magic Link sent. Check your Gmail inbox.';
+            }
+        });
+    }
+
+    // Password Login Submission
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = ADMIN_EMAIL;
+            const password = document.getElementById('loginPass').value;
+            statusMsg.textContent = '⏱ Logging in...';
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email, password: password 
+            });
+            if (error) {
+                statusMsg.textContent = '❌ Login failed: ' + error.message;
+            } else {
+                statusMsg.textContent = '✅ Success! Redirecting...';
+                checkUser();
             }
         });
     }
@@ -80,12 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentTags.forEach((tag, index) => {
             const tagEl = document.createElement('div');
             tagEl.className = 'tag-item';
-            tagEl.innerHTML = `
-                ${tag}
-                <button type="button" onclick="removeTag(${index})" style="background:none; border:none; color:black; cursor:pointer;">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+            tagEl.innerHTML = `${tag} <button type="button" onclick="removeTag(${index})" style="background:none; border:none; color:black; cursor:pointer;"><i class="fas fa-times"></i></button>`;
             tagsListContainer.appendChild(tagEl);
         });
     }
@@ -100,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
     window.removeTag = (index) => {
         currentTags.splice(index, 1);
         renderTags();
@@ -108,36 +109,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 3. CRUD Operations ---
     async function fetchProjects() {
-        const { data, error } = await supabaseClient
-            .from('projects')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            console.error('Error fetching projects:', error);
-            return;
-        }
-        renderProjectsList(data);
+        const { data, error } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
+        if (!error) renderProjectsList(data);
     }
 
     function renderProjectsList(projects) {
         projectsListContainer.innerHTML = '';
         if (projects.length === 0) {
-            projectsListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No projects found. Add your first one above!</p>';
+            projectsListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">Add your first project above!</p>';
             return;
         }
-
         projects.forEach(project => {
             const item = document.createElement('div');
             item.className = 'project-list-item';
             item.innerHTML = `
-                <div class="project-info-mini">
-                    <strong style="color: var(--secondary-color); font-size:1.1rem;">${project.title}</strong>
-                    <div style="font-size: 0.8rem; color: #888;">${project.tags.join(', ')}</div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="background:var(--secondary-color); border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Edit</button>
-                    <button class="btn-delete" onclick="deleteProject(${project.id})" style="background:#ff4444; border:none; color:white; padding:8px 15px; border-radius:5px; cursor:pointer;">Delete</button>
+                <div><strong style="color:var(--secondary-color);">${project.title}</strong><div style="font-size:0.8rem; color:#888;">${project.tags.join(', ')}</div></div>
+                <div>
+                    <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="background:var(--secondary-color); border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Edit</button>
+                    <button class="btn-delete" onclick="deleteProject(${project.id})" style="background:#ff4444; border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">Delete</button>
                 </div>
             `;
             projectsListContainer.appendChild(item);
@@ -146,7 +135,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     adminForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const projectData = {
             title: document.getElementById('pTitle').value,
             description: document.getElementById('pDesc').value,
@@ -155,22 +143,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             live_link: document.getElementById('pLive').value,
             github_link: document.getElementById('pGithub').value
         };
-
         if (isEditing) {
-            const id = projectIDInput.value;
-            const { error } = await supabaseClient.from('projects').update(projectData).eq('id', id);
-            if (error) alert('Update error: ' + error.message);
-            else {
-                alert('Project updated!');
-                resetForm();
-            }
+            const { error } = await supabaseClient.from('projects').update(projectData).eq('id', projectIDInput.value);
+            if (!error) { alert('Project Updated!'); resetForm(); }
         } else {
             const { error } = await supabaseClient.from('projects').insert([projectData]);
-            if (error) alert('Save error: ' + error.message);
-            else {
-                alert('Project added globally!');
-                resetForm();
-            }
+            if (!error) { alert('Project Saved!'); resetForm(); }
         }
         fetchProjects();
     });
@@ -180,7 +158,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         formTitle.textContent = 'Edit Project';
         submitBtn.textContent = 'UPDATE PROJECT';
         cancelEditBtn.style.display = 'block';
-        
         projectIDInput.value = project.id;
         document.getElementById('pTitle').value = project.title;
         document.getElementById('pDesc').value = project.description;
@@ -193,10 +170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.deleteProject = async (id) => {
-        if (confirm('Are you sure you want to delete this project?')) {
+        if (confirm('Delete this project?')) {
             const { error } = await supabaseClient.from('projects').delete().eq('id', id);
-            if (error) alert('Delete error: ' + error.message);
-            else fetchProjects();
+            if (!error) fetchProjects();
         }
     };
 
@@ -209,9 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentTags = [];
         renderTags();
     }
-
     if (cancelEditBtn) cancelEditBtn.addEventListener('click', resetForm);
-
-    // Initial Auth Check
     checkUser();
 });

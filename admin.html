@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Magic Link Login</title>
+    <title>Admin Dashboard | Login</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -24,9 +24,8 @@
         .login-input { width: 100%; padding: 12px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-size: 1rem; }
         .magic-btn { width: 100%; padding: 12px; margin-top: 15px; background: var(--secondary-color); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .magic-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px var(--secondary-color); }
-        .magic-btn:disabled { background: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .magic-btn:disabled { background: #555; cursor: not-allowed; }
         
-        /* Admin Panel Styles */
         #adminPanel { display: none; padding: 40px; max-width: 1200px; margin: 0 auto; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         .form-section { background: rgba(255,255,255,0.03); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
@@ -34,22 +33,40 @@
         .project-list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .tag-item { display: inline-flex; background: var(--secondary-color); color: black; padding: 5px 12px; border-radius: 20px; margin: 5px; font-size: 0.8rem; font-weight: bold; }
         .logout-btn { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        .toggle-btn { background: none; border: none; color: var(--secondary-color); cursor: pointer; margin-top: 10px; font-size: 0.85rem; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div id="libError">⚠ Warning: Database library (Supabase) failed to load. Please check your internet connection!</div>
+    <div id="libError">⚠ Database library failed to load. Check your internet!</div>
 
     <!-- Login Screen -->
     <div id="loginScreen">
         <div class="login-card">
-            <h2 style="margin-bottom: 10px; color: var(--secondary-color);">Admin Panel</h2>
-            <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 20px;">Magic Link Login (Owner Only)</p>
-            <form id="magicForm">
-                <input type="email" id="magicEmail" class="login-input" value="alirazachh176@gmail.com" readonly required>
-                <button type="submit" class="magic-btn" id="sendBtn">SEND MAGIC LINK</button>
-            </form>
-            <p id="statusMsg" style="margin-top: 20px; font-size: 0.85rem; color: var(--secondary-color); display: none; min-height: 1.2rem;"></p>
+            <h2 id="loginTitle" style="margin-bottom: 10px; color: var(--secondary-color);">Admin Login</h2>
+            
+            <!-- Magic Link UI -->
+            <div id="magicLoginUI">
+                <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 20px;">Requested Magic Link will be sent to your Gmail.</p>
+                <form id="magicForm">
+                    <input type="email" id="magicEmail" class="login-input" value="alirazachh176@gmail.com" readonly>
+                    <button type="submit" class="magic-btn" id="sendBtn">SEND MAGIC LINK</button>
+                </form>
+                <button class="toggle-btn" onclick="toggleMode('password')">Or Login with Password</button>
+            </div>
+
+            <!-- Password Login UI -->
+            <div id="passwordLoginUI" style="display: none;">
+                <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 20px;">Login with your secured password.</p>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" class="login-input" value="alirazachh176@gmail.com" readonly>
+                    <input type="password" id="loginPass" class="login-input" placeholder="Password" required>
+                    <button type="submit" class="magic-btn">LOGIN NOW</button>
+                </form>
+                <button class="toggle-btn" onclick="toggleMode('magic')">Or Use Magic Link</button>
+            </div>
+
+            <p id="statusMsg" style="margin-top: 20px; font-size: 0.85rem; color: var(--secondary-color); min-height: 1.2rem;"></p>
         </div>
     </div>
 
@@ -61,27 +78,29 @@
         </div>
         <div class="form-section">
             <h2 id="formTitle">Add New Project</h2>
-            <form id="adminForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <form id="adminForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Project Title</label>
-                    <input type="text" id="pTitle" class="login-input" placeholder="e.g. AdFlow Pro" required>
+                    <input type="text" id="pTitle" class="login-input" placeholder="Project Name" required>
                 </div>
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Description</label>
-                    <textarea id="pDesc" class="login-input" style="height: 100px;" required></textarea>
+                    <textarea id="pDesc" class="login-input" style="height: 80px;" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Image URL</label>
                     <input type="url" id="pImage" class="login-input" placeholder="Unsplash Link" required>
                 </div>
                 <div class="form-group">
-                    <label>Tags (Comma separated)</label>
+                    <label>Tags</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="tagInput" class="login-input" placeholder="e.g. React, UI/UX">
+                        <input type="text" id="tagInput" class="login-input" placeholder="React, Node">
                         <button type="button" id="addTagBtn" class="magic-btn" style="width:auto; margin-top:10px;">Add</button>
                     </div>
                 </div>
                 <div id="tagsList" style="grid-column: span 2;"></div>
+                <div class="form-group"><label>Live Demo</label><input type="url" id="pLive" class="login-input"></div>
+                <div class="form-group"><label>GitHub Link</label><input type="url" id="pGithub" class="login-input"></div>
                 <input type="hidden" id="projectID">
                 <div style="grid-column: span 2; display: flex; gap: 10px;">
                     <button type="submit" id="submitBtn" class="magic-btn">SAVE PROJECT</button>
@@ -95,19 +114,18 @@
         </div>
     </div>
 
-    <!-- SDK and Scripts (Safe Order) -->
+    <!-- Scripts -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script>
-        // Post-load check for Supabase SDK
         window.addEventListener('load', () => {
-            if (typeof supabase === 'undefined') {
-                document.getElementById('libError').style.display = 'block';
-                const sendBtn = document.getElementById('sendBtn');
-                sendBtn.disabled = true;
-                sendBtn.textContent = 'CONNECTION ERROR';
-            }
+            if (typeof supabase === 'undefined') document.getElementById('libError').style.display = 'block';
         });
+        function toggleMode(mode) {
+            document.getElementById('magicLoginUI').style.display = (mode === 'magic') ? 'block' : 'none';
+            document.getElementById('passwordLoginUI').style.display = (mode === 'password') ? 'block' : 'none';
+            document.getElementById('statusMsg').textContent = '';
+        }
     </script>
     <script src="js/admin.js"></script>
 </body>
