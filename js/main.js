@@ -254,36 +254,47 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // === 7. Load Custom Projects from Admin Panel ===
+    // === 7. Load Custom Projects from Supabase ===
     const projectsGrid = document.querySelector('.projects-grid');
-    if (projectsGrid) {
-        const customProjects = JSON.parse(localStorage.getItem('customProjects')) || [];
-        customProjects.forEach(project => {
-            const article = document.createElement('article');
-            article.className = 'project-card show-animation'; // Add animation class immediately or observer will catch it
+    if (projectsGrid && typeof supabaseClient !== 'undefined') {
+        const fetchProjects = async () => {
+            const { data: customProjects, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false });
             
-            const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
-            
-            article.innerHTML = `
-                <div class="project-image">
-                    <img src="${project.image}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">${project.title}</h3>
-                    <p class="project-description">${project.description}</p>
-                    <div class="project-tags">
-                        ${tagsHTML}
+            if (error) {
+                console.error('Error fetching projects:', error);
+                return;
+            }
+
+            customProjects.forEach(project => {
+                const article = document.createElement('article');
+                article.className = 'project-card show-animation';
+                
+                const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                
+                article.innerHTML = `
+                    <div class="project-image">
+                        <img src="${project.image}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
                     </div>
-                    <div class="project-links">
-                        ${project.liveLink ? `<a href="${project.liveLink}" target="_blank" rel="noopener" class="btn-link">Live Demo</a>` : ''}
-                        ${project.githubLink ? `<a href="${project.githubLink}" target="_blank" rel="noopener" class="btn-link">GitHub</a>` : ''}
+                    <div class="project-content">
+                        <h3 class="project-title">${project.title}</h3>
+                        <p class="project-description">${project.description}</p>
+                        <div class="project-tags">
+                            ${tagsHTML}
+                        </div>
+                        <div class="project-links">
+                            ${project.live_link ? `<a href="${project.live_link}" target="_blank" rel="noopener" class="btn-link">Live Demo</a>` : ''}
+                            ${project.github_link ? `<a href="${project.github_link}" target="_blank" rel="noopener" class="btn-link">GitHub</a>` : ''}
+                        </div>
                     </div>
-                </div>
-            `;
-            
-            // Append the custom project
-            projectsGrid.appendChild(article);
-        });
+                `;
+                
+                projectsGrid.appendChild(article);
+            });
+        };
+        fetchProjects();
     }
 
     console.log('Portfolio Main Initialized Successfully!');

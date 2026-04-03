@@ -1,19 +1,60 @@
 /**
- * Ali Raza - Portfolio Admin JS
- * Handles adding and deleting projects from localStorage.
+ * Ali Raza - Portfolio Admin JS (Supabase Version)
+ * Handles full CRUD operations and Auth.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const loginScreen = document.getElementById('loginScreen');
+    const adminPanel = document.getElementById('adminPanel');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
     const adminForm = document.getElementById('adminForm');
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const projectIDInput = document.getElementById('projectID');
+    
     const tagInput = document.getElementById('tagInput');
     const addTagBtn = document.getElementById('addTagBtn');
     const tagsListContainer = document.getElementById('tagsList');
     const projectsListContainer = document.getElementById('projectsList');
     
     let currentTags = [];
-    let customProjects = JSON.parse(localStorage.getItem('customProjects')) || [];
+    let isEditing = false;
 
-    // --- 1. Tag Management ---
+    // --- 1. Auth Management ---
+    const checkUser = async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            loginScreen.style.display = 'none';
+            adminPanel.style.display = 'block';
+            fetchProjects();
+        } else {
+            loginScreen.style.display = 'flex';
+            adminPanel.style.display = 'none';
+        }
+    };
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+            alert('Login failed: ' + error.message);
+        } else {
+            checkUser();
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        checkUser();
+    });
+
+    // --- 2. Tag Management ---
     function renderTags() {
         tagsListContainer.innerHTML = '';
         currentTags.forEach((tag, index) => {
@@ -21,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tagEl.className = 'tag-item';
             tagEl.innerHTML = `
                 ${tag}
-                <button type="button" onclick="window.removeTag(${index})">
+                <button type="button" onclick="removeTag(${index})">
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -38,41 +79,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    tagInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTagBtn.click();
-        }
-    });
-
     window.removeTag = (index) => {
         currentTags.splice(index, 1);
         renderTags();
     };
 
-    // --- 2. Project Persistence ---
-    function saveProjects() {
-        localStorage.setItem('customProjects', JSON.stringify(customProjects));
-        renderProjectsList();
+    // --- 3. CRUD Operations ---
+    async function fetchProjects() {
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Error fetching projects:', error);
+            return;
+        }
+        renderProjectsList(data);
     }
 
-    function renderProjectsList() {
-        // Clear previous list but keep the header
+    function renderProjectsList(projects) {
         const header = projectsListContainer.querySelector('h3');
         projectsListContainer.innerHTML = '';
         if (header) projectsListContainer.appendChild(header);
 
-        if (customProjects.length === 0) {
-            const emptyMsg = document.createElement('p');
-            emptyMsg.style.color = 'var(--text-gray)';
-            emptyMsg.style.textAlign = 'center';
-            emptyMsg.style.padding = '20px';
-            emptyMsg.textContent = 'No custom projects added yet.';
-            projectsListContainer.appendChild(emptyMsg);
+        if (projects.length === 0) {
+            projectsListContainer.innerHTML += '<p style="text-align:center; padding:20px; color:#666;">No projects found in database.</p>';
             return;
         }
 
-        customProjects.forEach((project, index) => {
+        projects.forEach(project => {
             const item = document.createElement('div');
             item.className = 'project-list-item';
             item.innerHTML = `
@@ -80,50 +116,93 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong style="display:block; font-size: 1.1rem; color: var(--secondary-color);">${project.title}</strong>
                     <span style="font-size: 0.85rem; color: var(--text-gray);">${project.tags.join(', ')}</span>
                 </div>
-                <button class="btn-delete" onclick="window.deleteProject(${index})">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-edit" onclick="editProject(${JSON.stringify(project).replace(/"/g, '&quot;')})" style="background:var(--secondary-color); border:none; color:white; padding:8px 15px; border-radius:5px; cursor:pointer;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn-delete" onclick="deleteProject(${project.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
             `;
             projectsListContainer.appendChild(item);
         });
     }
 
-    adminForm.addEventListener('submit', (e) => {
+    adminForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const newProject = {
-            id: Date.now(),
+        const projectData = {
             title: document.getElementById('pTitle').value,
             description: document.getElementById('pDesc').value,
             image: document.getElementById('pImage').value,
             tags: [...currentTags],
-            liveLink: document.getElementById('pLive').value,
-            githubLink: document.getElementById('pGithub').value
+            live_link: document.getElementById('pLive').value,
+            github_link: document.getElementById('pGithub').value
         };
 
-        if (newProject.tags.length === 0) {
-            alert('Please add at least one tag/language.');
+        if (projectData.tags.length === 0) {
+            alert('Please add at least one tag.');
             return;
         }
 
-        customProjects.push(newProject);
-        saveProjects();
-
-        // Reset form
-        adminForm.reset();
-        currentTags = [];
-        renderTags();
-        
-        alert('Project added successfully!');
+        if (isEditing) {
+            const id = projectIDInput.value;
+            const { error } = await supabaseClient.from('projects').update(projectData).eq('id', id);
+            if (error) alert('Error updating: ' + error.message);
+            else {
+                alert('Project updated!');
+                resetForm();
+            }
+        } else {
+            const { error } = await supabaseClient.from('projects').insert([projectData]);
+            if (error) alert('Error saving: ' + error.message);
+            else {
+                alert('Project added!');
+                resetForm();
+            }
+        }
+        fetchProjects();
     });
 
-    window.deleteProject = (index) => {
-        if (confirm('Are you sure you want to delete this project?')) {
-            customProjects.splice(index, 1);
-            saveProjects();
+    window.editProject = (project) => {
+        isEditing = true;
+        formTitle.textContent = 'Edit Project';
+        submitBtn.textContent = 'Update Project';
+        cancelEditBtn.style.display = 'block';
+        
+        projectIDInput.value = project.id;
+        document.getElementById('pTitle').value = project.title;
+        document.getElementById('pDesc').value = project.description;
+        document.getElementById('pImage').value = project.image;
+        document.getElementById('pLive').value = project.live_link || '';
+        document.getElementById('pGithub').value = project.github_link || '';
+        currentTags = [...project.tags];
+        renderTags();
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteProject = async (id) => {
+        if (confirm('Delete this project forever?')) {
+            const { error } = await supabaseClient.from('projects').delete().eq('id', id);
+            if (error) alert('Error deleting: ' + error.message);
+            else fetchProjects();
         }
     };
 
-    // Initial render
-    renderProjectsList();
+    function resetForm() {
+        isEditing = false;
+        formTitle.textContent = 'Add New Project';
+        submitBtn.textContent = 'Save Project';
+        cancelEditBtn.style.display = 'none';
+        adminForm.reset();
+        currentTags = [];
+        renderTags();
+    }
+
+    cancelEditBtn.addEventListener('click', resetForm);
+
+    // Initial Auth Check
+    checkUser();
 });
