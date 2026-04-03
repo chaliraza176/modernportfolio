@@ -13,49 +13,20 @@
             --text-gray: #a0a0a0;
         }
         
-        body {
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Inter', sans-serif;
-        }
+        body { background-color: var(--bg-color); color: white; font-family: 'Inter', sans-serif; }
 
-        /* Error Banner */
-        #libError {
-            display: none;
-            background: #ff4444; color: white;
-            padding: 10px; text-align: center;
-            font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 2000;
-        }
+        /* Error/Status Banners */
+        #libError { display: none; background: #ff4444; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 2000; }
 
         /* Login Screen */
-        #loginScreen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-        }
-        .login-card {
-            background: rgba(255,255,255,0.05);
-            padding: 40px; border-radius: 20px;
-            text-align: center; width: 100%; max-width: 400px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        .login-input {
-            width: 100%; padding: 12px; margin: 10px 0;
-            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-            color: white; border-radius: 8px; font-size: 1rem;
-        }
-        .magic-btn {
-            width: 100%; padding: 12px; margin-top: 15px;
-            background: var(--secondary-color); color: black;
-            border: none; border-radius: 8px; cursor: pointer;
-            font-weight: bold; font-size: 1rem;
-            transition: 0.3s;
-        }
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-size: 1rem; }
+        .magic-btn { width: 100%; padding: 12px; margin-top: 15px; background: var(--secondary-color); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .magic-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px var(--secondary-color); }
+        .magic-btn:disabled { background: #555; cursor: not-allowed; transform: none; box-shadow: none; }
         
+        /* Admin Panel Styles */
         #adminPanel { display: none; padding: 40px; max-width: 1200px; margin: 0 auto; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         .form-section { background: rgba(255,255,255,0.03); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
@@ -75,10 +46,10 @@
             <h2 style="margin-bottom: 10px; color: var(--secondary-color);">Admin Panel</h2>
             <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 20px;">Magic Link Login (Owner Only)</p>
             <form id="magicForm">
-                <input type="email" id="magicEmail" class="login-input" placeholder="Owner Email" value="alirazachh176@gmail.com" readonly required>
+                <input type="email" id="magicEmail" class="login-input" value="alirazachh176@gmail.com" readonly required>
                 <button type="submit" class="magic-btn" id="sendBtn">SEND MAGIC LINK</button>
             </form>
-            <p id="statusMsg" style="margin-top: 20px; font-size: 0.85rem; color: var(--secondary-color); display: none;"></p>
+            <p id="statusMsg" style="margin-top: 20px; font-size: 0.85rem; color: var(--secondary-color); display: none; min-height: 1.2rem;"></p>
         </div>
     </div>
 
@@ -88,7 +59,6 @@
             <h1>Project Dashboard</h1>
             <button id="logoutBtn" class="logout-btn">LOGOUT</button>
         </div>
-        <!-- Form and List remains identical -->
         <div class="form-section">
             <h2 id="formTitle">Add New Project</h2>
             <form id="adminForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
@@ -129,17 +99,13 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script>
-        // Double Check Initialization
+        // Post-load check for Supabase SDK
         window.addEventListener('load', () => {
             if (typeof supabase === 'undefined') {
                 document.getElementById('libError').style.display = 'block';
-                document.getElementById('sendBtn').disabled = true;
-                document.getElementById('sendBtn').textContent = 'CONNECTION ERROR';
-            } else {
-                // Ensure global client is ready
-                if (!window.supabaseClient && typeof SB_URL !== 'undefined') {
-                    window.supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-                }
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'CONNECTION ERROR';
             }
         });
     </script>
