@@ -73,9 +73,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         else alert('Password reset link sent to your email!');
     });
 
-    const registerLink = document.getElementById('registerLink');
-    if (registerLink) {
-        registerLink.addEventListener('click', async () => {
+    const registerBtn = document.getElementById('registerBtn');
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPass').value;
             
@@ -88,9 +88,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) alert('Registration failed: ' + error.message);
-            else alert('Registration successful! Ab aap wahi email/password se login kar sakte hain.');
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert('Registration failed: ' + error.message);
+            } else {
+                alert('Registration successful! Please login now.');
+            }
         });
     }
 
