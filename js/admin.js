@@ -26,18 +26,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditing = false;
     const ADMIN_EMAIL = 'alirazachh176@gmail.com';
 
+    // --- 0. Theme Sync Logic ---
+    function applyTheme() {
+        const savedColor = localStorage.getItem('themeColor') || '#00ffcc';
+        document.documentElement.style.setProperty('--secondary-color', savedColor);
+        document.documentElement.style.setProperty('--primary-color', savedColor);
+        
+        // Update RGB version for overlays
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+        }
+        const rgb = hexToRgb(savedColor);
+        if (rgb) document.documentElement.style.setProperty('--secondary-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    }
+    applyTheme();
+    // Re-check periodically or on storage change
+    window.addEventListener('storage', applyTheme);
+
     // --- 1. Auth Management ---
     const checkUser = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user.email === ADMIN_EMAIL) {
             loginScreen.style.display = 'none';
             adminPanel.style.display = 'block';
+            await migrateLegacyProjects(); // One-time migration for old cards
             fetchProjects();
         } else {
             loginScreen.style.display = 'flex';
             adminPanel.style.display = 'none';
         }
     };
+
+    // --- Legacy Migration Utility ---
+    async function migrateLegacyProjects() {
+        const isMigrated = localStorage.getItem('projects-migrated-to-supabase');
+        if (isMigrated) return; // Only run once
+
+        const { data: existing } = await supabaseClient.from('projects').select('id').limit(1);
+        if (existing && existing.length > 0) {
+             localStorage.setItem('projects-migrated-to-supabase', 'true');
+             return;
+        }
+
+        const legacyProjects = [
+            { title: "Student Portal Dashboard", description: "A responsive student dashboard featuring course registration, grade viewing, and announcements.", image: "assets/images/student-portal.png", tags: ["HTML", "CSS", "JavaScript", "Responsive"], live_link: "https://studentportal-creponne-8d980e.netlify.app/", github_link: "https://github.com/chaliraza176" },
+            { title: "Futuristic Portfolio", description: "A design-focused portfolio featuring glassmorphism effects, smooth scroll animations, and interactive micro-interactions.", image: "assets/images/futuristic-portfolio.png", tags: ["HTML", "CSS", "JavaScript", "Animations"], live_link: "https://portfoliofutuistic-ganache-4571e3.netlify.app/", github_link: "https://github.com/chaliraza176" },
+            { title: "Minimalist Portfolio", description: "A single-page portfolio optimized for fast performance and clean UI.", image: "assets/images/minimalist-portfolio.png", tags: ["HTML", "CSS", "JavaScript", "Performance"], live_link: "https://calm-dodol-a21aca.netlify.app/", github_link: "https://github.com/chaliraza176" },
+            { title: "Simple Portfolio", description: "A clean and straightforward portfolio website showcasing front-end creativity.", image: "assets/images/simple-portfolio.png", tags: ["HTML", "CSS", "JavaScript", "Responsive"], live_link: "https://simpleportfolio-palmier-f4a93b.netlify.app/", github_link: "https://github.com/chaliraza176" },
+            { title: "MillionVerified Clone", description: "Created a copy website focusing on email verification services using HTML, JavaScript and TailwindCSS.", image: "assets/images/millionverified.png", tags: ["HTML", "JavaScript", "TailwindCSS"], live_link: "", github_link: "https://github.com/chaliraza176" },
+            { title: "Nvysion Platform", description: "A modern, scalable full-stack e-commerce platform for custom printing services.", image: "assets/images/nvysion-platform.png", tags: ["React 19", "Node.js", "MongoDB", "Express"], live_link: "https://nvysion-platform-4cedc1.netlify.app/", github_link: "https://github.com/chaliraza176/Nvysion-Platform" },
+            { title: "UniqVue AI App", description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native.", image: "assets/images/uniqvue.png", tags: ["React Native", "TypeScript", "AI", "Mobile"], live_link: "", github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-" },
+            { title: "Modern E-Commerce Store", description: "A high-end, responsive online store interface featuring modern product grids and dynamic cart functionality.", image: "assets/images/online-store.png", tags: ["HTML", "CSS", "JavaScript", "UX/UI"], live_link: "", github_link: "https://github.com/chaliraza176/online-store" }
+        ];
+
+        const { error } = await supabaseClient.from('projects').insert(legacyProjects);
+        if (!error) localStorage.setItem('projects-migrated-to-supabase', 'true');
+    }
 
     // Magic Link Submission
     if (magicForm) {
@@ -119,18 +164,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             projectsListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">Add your first project above!</p>';
             return;
         }
+
+        // Using Card Layout for Admin List
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        grid.style.gap = '25px';
+
         projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'project-list-item';
-            item.innerHTML = `
-                <div><strong style="color:var(--secondary-color);">${project.title}</strong><div style="font-size:0.8rem; color:#888;">${project.tags.join(', ')}</div></div>
-                <div>
-                    <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="background:var(--secondary-color); border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Edit</button>
-                    <button class="btn-delete" onclick="deleteProject(${project.id})" style="background:#ff4444; border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">Delete</button>
+            const card = document.createElement('article');
+            card.className = 'project-card';
+            card.style.position = 'relative';
+            card.innerHTML = `
+                <div class="project-image">
+                    <img src="${project.image}" alt="${project.title}" class="project-img" style="aspect-ratio: 16/9; object-fit: cover; border-radius: 10px 10px 0 0;">
+                </div>
+                <div class="project-content" style="padding: 20px;">
+                    <h3 class="project-title" style="color: var(--secondary-color);">${project.title}</h3>
+                    <p class="project-description" style="font-size: 0.85rem; height: 50px; overflow: hidden; margin: 10px 0;">${project.description}</p>
+                    <div class="project-tags">
+                        ${project.tags.map(tag => `<span class="tag" style="background: rgba(var(--secondary-color-rgb), 0.1); color: var(--secondary-color); font-size:0.7rem;">${tag}</span>`).join('')}
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="flex:1; background:var(--secondary-color); border:none; padding:8px; border-radius:5px; cursor:pointer; font-weight:bold;">Edit</button>
+                        <button class="btn-delete" onclick="deleteProject(${project.id})" style="flex:1; background:#ff444433; border:1px solid #ff4444; color:#ff4444; padding:8px; border-radius:5px; cursor:pointer;">Delete</button>
+                    </div>
                 </div>
             `;
-            projectsListContainer.appendChild(item);
+            grid.appendChild(card);
         });
+        projectsListContainer.appendChild(grid);
     }
 
     adminForm.addEventListener('submit', async (e) => {

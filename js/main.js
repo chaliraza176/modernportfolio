@@ -240,6 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedColor = localStorage.getItem('themeColor');
     if (savedColor) applyThemeColor(savedColor, true);
 
+    // Sync theme across tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'themeColor' && e.newValue) {
+            applyThemeColor(e.newValue);
+        }
+    });
+
     // === 6. Intersection Observer for Scroll Animations ===
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
