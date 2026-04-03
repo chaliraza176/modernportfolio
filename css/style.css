@@ -642,6 +642,12 @@ body {
     align-items: center;
 }
 
+@media (max-width: 991px) {
+    .about-content {
+        grid-template-columns: 1fr;
+    }
+}
+
 .about-description {
     font-size: 1.1rem;
     color: var(--text-gray);

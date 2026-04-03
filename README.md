@@ -1,15 +1,18 @@
 # 🚀 Ali Raza | Full Stack Developer & Innovator
 
+**Live Link:** [modernportfolio-six.vercel.app](https://modernportfolio-six.vercel.app/)
+
 <div align="center">
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/your-netlify-id/deploy-status)](https://modrenportfolio-ali.netlify.netlify.app)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployment-black?logo=vercel)](https://modernportfolio-six.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/chaliraza176/modernportfolio?style=social)](https://github.com/chaliraza176/modernportfolio)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?logo=linkedin)](https://www.linkedin.com/in/ali-raza-455102292/)
 
 **A premium, high-performance portfolio showcasing 18+ full-stack and specialized projects.**
 
-[Live Demo](https://modrenportfolio-ali.netlify.app) • [View Projects](#-project-showcase) • [Contact Me](#-get-in-touch)
+[Live Demo](https://modernportfolio-six.vercel.app/) • [View Projects](#-project-showcase) • [Contact Me](#-get-in-touch)
 
 </div>
 
@@ -123,3 +126,4 @@ I am open to collaborations and new opportunities.
 
 ⭐ Star this repo if you like it!
 
+</div>
