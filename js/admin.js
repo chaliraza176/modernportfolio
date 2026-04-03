@@ -73,6 +73,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         else alert('Password reset link sent to your email!');
     });
 
+    const registerLink = document.getElementById('registerLink');
+    if (registerLink) {
+        registerLink.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPass').value;
+            
+            if (email !== ADMIN_EMAIL) {
+                alert('Only ' + ADMIN_EMAIL + ' can register as an admin.');
+                return;
+            }
+            if (!password || password.length < 6) {
+                alert('Please enter a secure password (at least 6 characters).');
+                return;
+            }
+            
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) alert('Registration failed: ' + error.message);
+            else alert('Registration successful! Ab aap wahi email/password se login kar sakte hain.');
+        });
+    }
+
     logoutBtn.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
         checkUser();
