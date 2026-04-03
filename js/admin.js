@@ -1,15 +1,14 @@
 /**
- * Ali Raza - Portfolio Admin JS (Supabase Auth Version)
- * Handles secure login, forgot password, and full CRUD.
- * RESTRICTED: Only alirazachh176@gmail.com can log in.
+ * Ali Raza - Portfolio Admin JS (SUPABASE MAGIC LINK VERSION)
+ * No passwords needed. Just click the link in your email.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
     const loginScreen = document.getElementById('loginScreen');
     const adminPanel = document.getElementById('adminPanel');
-    const loginForm = document.getElementById('loginForm');
+    const magicForm = document.getElementById('magicForm');
+    const statusMsg = document.getElementById('statusMsg');
     const logoutBtn = document.getElementById('logoutBtn');
-    const forgotPassLink = document.getElementById('forgotPassLink');
     
     const adminForm = document.getElementById('adminForm');
     const formTitle = document.getElementById('formTitle');
@@ -26,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditing = false;
     const ADMIN_EMAIL = 'alirazachh176@gmail.com';
 
-    // --- 1. Auth Management ---
+    // --- 1. Auth Management (Magic Link) ---
     const checkUser = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && session.user.email === ADMIN_EMAIL) {
@@ -36,63 +35,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             loginScreen.style.display = 'flex';
             adminPanel.style.display = 'none';
-            if (session) await supabaseClient.auth.signOut(); // Sign out unauthorized users
         }
     };
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPass').value;
-        
-        if (email !== ADMIN_EMAIL) {
-            alert('Unauthorized login attempt. Only the site owner can access the admin panel.');
-            return;
-        }
-        
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-            alert('Login failed: ' + error.message);
-        } else {
-            checkUser();
-        }
-    });
-
-    forgotPassLink.addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value.trim();
-        if (!email || email !== ADMIN_EMAIL) {
-            alert('Please enter your admin email to reset your password.');
-            return;
-        }
-        
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/admin.html'
-        });
-        
-        if (error) alert('Error: ' + error.message);
-        else alert('Password reset link sent to your email!');
-    });
-
-    const registerBtn = document.getElementById('registerBtn');
-    if (registerBtn) {
-        registerBtn.addEventListener('click', async () => {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPass').value;
+    if (magicForm) {
+        magicForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('magicEmail').value.trim();
             
             if (email !== ADMIN_EMAIL) {
-                alert('Only ' + ADMIN_EMAIL + ' can register as an admin.');
+                alert('Restricted: Only the site owner can request a Magic Link.');
                 return;
             }
-            if (!password || password.length < 6) {
-                alert('Please enter a secure password (at least 6 characters).');
-                return;
-            }
-            
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+            statusMsg.textContent = '⏱ Sending Magic Link... Please wait.';
+            statusMsg.style.display = 'block';
+
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email: email,
+                options: {
+                    // This will redirect you back to this admin page after you click the link in Gmail
+                    emailRedirectTo: window.location.href 
+                }
+            });
+
             if (error) {
-                alert('Registration failed: ' + error.message);
+                statusMsg.textContent = '❌ Error: ' + error.message;
+                statusMsg.style.color = '#ff4444';
             } else {
-                alert('Registration successful! Please login now.');
+                statusMsg.textContent = '📧 Success! Magic Link sent to your Gmail inbox. Check your email and click the link to login.';
+                statusMsg.style.color = 'var(--secondary-color)';
             }
         });
     }
@@ -102,18 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkUser();
     });
 
-    // --- 2. Registration Logic (DEVELOPER ONLY - Access via console to set up once) ---
-    window.setupAdmin = async (email, password) => {
-        if (email !== ADMIN_EMAIL) {
-            console.error('Registration restricted to the admin email.');
-            return;
-        }
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) console.error('Setup failed:', error.message);
-        else console.log('Admin account registered! Please login now.');
-    };
-
-    // --- 3. Tag Management ---
+    // --- 2. Tag Management ---
     function renderTags() {
         tagsListContainer.innerHTML = '';
         currentTags.forEach((tag, index) => {
@@ -121,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tagEl.className = 'tag-item';
             tagEl.innerHTML = `
                 ${tag}
-                <button type="button" onclick="removeTag(${index})">
+                <button type="button" onclick="removeTag(${index})" style="background:none; border:none; color:black; cursor:pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -129,21 +90,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    addTagBtn.addEventListener('click', () => {
-        const value = tagInput.value.trim();
-        if (value && !currentTags.includes(value)) {
-            currentTags.push(value);
-            tagInput.value = '';
-            renderTags();
-        }
-    });
+    if (addTagBtn) {
+        addTagBtn.addEventListener('click', () => {
+            const value = tagInput.value.trim();
+            if (value && !currentTags.includes(value)) {
+                currentTags.push(value);
+                tagInput.value = '';
+                renderTags();
+            }
+        });
+    }
 
     window.removeTag = (index) => {
         currentTags.splice(index, 1);
         renderTags();
     };
 
-    // --- 4. CRUD Operations ---
+    // --- 3. CRUD Operations ---
     async function fetchProjects() {
         const { data, error } = await supabaseClient
             .from('projects')
@@ -158,12 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderProjectsList(projects) {
-        const header = projectsListContainer.querySelector('h3');
         projectsListContainer.innerHTML = '';
-        if (header) projectsListContainer.appendChild(header);
-
         if (projects.length === 0) {
-            projectsListContainer.innerHTML += '<p style="text-align:center; padding:20px; color:#666;">No projects found in database.</p>';
+            projectsListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No projects found. Add your first one above!</p>';
             return;
         }
 
@@ -172,16 +132,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.className = 'project-list-item';
             item.innerHTML = `
                 <div class="project-info-mini">
-                    <strong style="display:block; font-size: 1.1rem; color: var(--secondary-color);">${project.title}</strong>
-                    <span style="font-size: 0.85rem; color: var(--text-gray);">${project.tags.join(', ')}</span>
+                    <strong style="color: var(--secondary-color); font-size:1.1rem;">${project.title}</strong>
+                    <div style="font-size: 0.8rem; color: #888;">${project.tags.join(', ')}</div>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-edit" onclick="editProject(${JSON.stringify(project).replace(/"/g, '&quot;')})" style="background:var(--secondary-color); border:none; color:white; padding:8px 15px; border-radius:5px; cursor:pointer;">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn-delete" onclick="deleteProject(${project.id})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="background:var(--secondary-color); border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Edit</button>
+                    <button class="btn-delete" onclick="deleteProject(${project.id})" style="background:#ff4444; border:none; color:white; padding:8px 15px; border-radius:5px; cursor:pointer;">Delete</button>
                 </div>
             `;
             projectsListContainer.appendChild(item);
@@ -200,24 +156,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             github_link: document.getElementById('pGithub').value
         };
 
-        if (projectData.tags.length === 0) {
-            alert('Please add at least one tag.');
-            return;
-        }
-
         if (isEditing) {
             const id = projectIDInput.value;
             const { error } = await supabaseClient.from('projects').update(projectData).eq('id', id);
-            if (error) alert('Error updating: ' + error.message);
+            if (error) alert('Update error: ' + error.message);
             else {
                 alert('Project updated!');
                 resetForm();
             }
         } else {
             const { error } = await supabaseClient.from('projects').insert([projectData]);
-            if (error) alert('Error saving: ' + error.message);
+            if (error) alert('Save error: ' + error.message);
             else {
-                alert('Project added!');
+                alert('Project added globally!');
                 resetForm();
             }
         }
@@ -227,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.editProject = (project) => {
         isEditing = true;
         formTitle.textContent = 'Edit Project';
-        submitBtn.textContent = 'Update Project';
+        submitBtn.textContent = 'UPDATE PROJECT';
         cancelEditBtn.style.display = 'block';
         
         projectIDInput.value = project.id;
@@ -238,14 +189,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pGithub').value = project.github_link || '';
         currentTags = [...project.tags];
         renderTags();
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.deleteProject = async (id) => {
-        if (confirm('Delete this project forever?')) {
+        if (confirm('Are you sure you want to delete this project?')) {
             const { error } = await supabaseClient.from('projects').delete().eq('id', id);
-            if (error) alert('Error deleting: ' + error.message);
+            if (error) alert('Delete error: ' + error.message);
             else fetchProjects();
         }
     };
@@ -253,14 +203,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function resetForm() {
         isEditing = false;
         formTitle.textContent = 'Add New Project';
-        submitBtn.textContent = 'Save Project';
+        submitBtn.textContent = 'SAVE PROJECT';
         cancelEditBtn.style.display = 'none';
         adminForm.reset();
         currentTags = [];
         renderTags();
     }
 
-    cancelEditBtn.addEventListener('click', resetForm);
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', resetForm);
 
     // Initial Auth Check
     checkUser();
