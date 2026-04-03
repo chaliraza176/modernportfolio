@@ -1,6 +1,7 @@
 /**
- * Ali Raza - Portfolio Admin JS (Supabase Version)
- * Handles full CRUD operations and Auth.
+ * Ali Raza - Portfolio Admin JS (Supabase Auth Version)
+ * Handles secure login, forgot password, and full CRUD.
+ * RESTRICTED: Only alirazachh176@gmail.com can log in.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -8,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const adminPanel = document.getElementById('adminPanel');
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
+    const forgotPassLink = document.getElementById('forgotPassLink');
     
     const adminForm = document.getElementById('adminForm');
     const formTitle = document.getElementById('formTitle');
@@ -22,26 +24,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     let currentTags = [];
     let isEditing = false;
+    const ADMIN_EMAIL = 'alirazachh176@gmail.com';
 
     // --- 1. Auth Management ---
     const checkUser = async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+        if (session && session.user.email === ADMIN_EMAIL) {
             loginScreen.style.display = 'none';
             adminPanel.style.display = 'block';
             fetchProjects();
         } else {
             loginScreen.style.display = 'flex';
             adminPanel.style.display = 'none';
+            if (session) await supabaseClient.auth.signOut(); // Sign out unauthorized users
         }
     };
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
+        const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPass').value;
         
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (email !== ADMIN_EMAIL) {
+            alert('Unauthorized login attempt. Only the site owner can access the admin panel.');
+            return;
+        }
+        
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
             alert('Login failed: ' + error.message);
         } else {
@@ -49,18 +58,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('registerLink').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPass').value;
-        
-        if (!email || !password) {
-            alert('Please enter email and password for registration.');
+    forgotPassLink.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        if (!email || email !== ADMIN_EMAIL) {
+            alert('Please enter your admin email to reset your password.');
             return;
         }
         
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) alert('Registration failed: ' + error.message);
-        else alert('Registration successful! Please login now.');
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/admin.html'
+        });
+        
+        if (error) alert('Error: ' + error.message);
+        else alert('Password reset link sent to your email!');
     });
 
     logoutBtn.addEventListener('click', async () => {
@@ -68,7 +78,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkUser();
     });
 
-    // --- 2. Tag Management ---
+    // --- 2. Registration Logic (DEVELOPER ONLY - Access via console to set up once) ---
+    window.setupAdmin = async (email, password) => {
+        if (email !== ADMIN_EMAIL) {
+            console.error('Registration restricted to the admin email.');
+            return;
+        }
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) console.error('Setup failed:', error.message);
+        else console.log('Admin account registered! Please login now.');
+    };
+
+    // --- 3. Tag Management ---
     function renderTags() {
         tagsListContainer.innerHTML = '';
         currentTags.forEach((tag, index) => {
@@ -98,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTags();
     };
 
-    // --- 3. CRUD Operations ---
+    // --- 4. CRUD Operations ---
     async function fetchProjects() {
         const { data, error } = await supabaseClient
             .from('projects')
