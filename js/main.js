@@ -254,5 +254,37 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
+    // === 7. Load Custom Projects from Admin Panel ===
+    const projectsGrid = document.querySelector('.projects-grid');
+    if (projectsGrid) {
+        const customProjects = JSON.parse(localStorage.getItem('customProjects')) || [];
+        customProjects.forEach(project => {
+            const article = document.createElement('article');
+            article.className = 'project-card show-animation'; // Add animation class immediately or observer will catch it
+            
+            const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            
+            article.innerHTML = `
+                <div class="project-image">
+                    <img src="${project.image}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">${project.title}</h3>
+                    <p class="project-description">${project.description}</p>
+                    <div class="project-tags">
+                        ${tagsHTML}
+                    </div>
+                    <div class="project-links">
+                        ${project.liveLink ? `<a href="${project.liveLink}" target="_blank" rel="noopener" class="btn-link">Live Demo</a>` : ''}
+                        ${project.githubLink ? `<a href="${project.githubLink}" target="_blank" rel="noopener" class="btn-link">GitHub</a>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Append the custom project
+            projectsGrid.appendChild(article);
+        });
+    }
+
     console.log('Portfolio Main Initialized Successfully!');
 });

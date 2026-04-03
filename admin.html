@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Ali Raza</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: var(--bg-color, #121212); color: var(--text-color, #fff); }
+        .admin-section { padding: 40px 20px; min-height: 100vh; }
+        .admin-container { max-width: 800px; margin: 0 auto; background: var(--card-bg, #1a1a1a); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color, #333); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .admin-title { font-size: 2rem; margin-bottom: 25px; color: var(--secondary-color, #0066CC); }
+        .form-group-admin { margin-bottom: 20px; }
+        .form-group-admin label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        .form-group-admin input, .form-group-admin textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, #444); background: rgba(0,0,0,0.3); color: #fff; font-family: inherit; font-size: 15px; }
+        .form-group-admin input:focus, .form-group-admin textarea:focus { outline: none; border-color: var(--secondary-color, #0066CC); box-shadow: 0 0 0 2px rgba(0,102,204,0.3); }
+        
+        .tags-container { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .tag-item { background: var(--secondary-color, #0066CC); padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .tag-item button { background: none; border: none; color: #fff; cursor: pointer; font-size: 14px; padding: 0; outline: none; transition: transform 0.2s; }
+        .tag-item button:hover { transform: scale(1.2); }
+        
+        .add-tag-wrapper { display: flex; gap: 10px; }
+        .btn-add { background: var(--secondary-color, #0066CC); border: none; color: #fff; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s; white-space: nowrap; }
+        .btn-add:hover { filter: brightness(1.1); }
+        
+        .projects-list { margin-top: 50px; }
+        .project-list-item { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color, #444); transition: transform 0.3s; }
+        .project-list-item:hover { transform: translateY(-2px); border-color: var(--secondary-color, #0066CC); }
+        .btn-delete { background: #dc3545; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.3s; }
+        .btn-delete:hover { background: #c82333; }
+        
+        .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--secondary-color, #0066CC); text-decoration: none; font-weight: bold; transition: color 0.3s; }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <section class="admin-section">
+        <div class="admin-container">
+            <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+            <h2 class="admin-title">Add New Project</h2>
+            <form id="adminForm">
+                <div class="form-group-admin">
+                    <label>Project Title *</label>
+                    <input type="text" id="pTitle" required placeholder="e.g. Modern E-commerce Store">
+                </div>
+                <div class="form-group-admin">
+                    <label>Description *</label>
+                    <textarea id="pDesc" rows="4" required placeholder="Describe your project..."></textarea>
+                </div>
+                <div class="form-group-admin">
+                    <label>Image URL *</label>
+                    <input type="url" id="pImage" value="https://via.placeholder.com/500x300/333333/ffffff?text=New+Project" required>
+                </div>
+                <div class="form-group-admin">
+                    <label>Languages / Tools</label>
+                    <div class="add-tag-wrapper">
+                        <input type="text" id="tagInput" placeholder="e.g. React">
+                        <button type="button" class="btn-add" id="addTagBtn"><i class="fas fa-plus"></i> Add Tag</button>
+                    </div>
+                    <div class="tags-container" id="tagsList"></div>
+                </div>
+                <div class="form-group-admin">
+                    <label>Live Demo URL (Optional)</label>
+                    <input type="url" id="pLive" placeholder="https://...">
+                </div>
+                <div class="form-group-admin">
+                    <label>GitHub URL (Optional)</label>
+                    <input type="url" id="pGithub" placeholder="https://github.com/...">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:20px; width:100%; border-radius: 8px; padding: 15px;">Save Project</button>
+            </form>
+
+            <div class="projects-list" id="projectsList">
+                <h3 style="margin-bottom: 20px; font-size: 1.5rem; border-bottom: 2px solid var(--border-color, #444); padding-bottom: 10px;">Your Added Projects</h3>
+                <!-- List added dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Theme Loading Script to Match Portfolio Colors -->
+    <script>
+        // Apply theme color if saved
+        const savedColor = localStorage.getItem('themeColor');
+        if (savedColor) {
+            const root = document.documentElement;
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+            }
+            function darkenColor(hex, percent) {
+                const rgb = hexToRgb(hex);
+                if (!rgb) return hex;
+                return `#${Math.floor(rgb.r * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(rgb.g * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(rgb.b * (1 - percent)).toString(16).padStart(2, '0')}`;
+            }
+            const primaryColor = darkenColor(savedColor, 0.3);
+            root.style.setProperty('--secondary-color', savedColor);
+            root.style.setProperty('--primary-color', primaryColor);
+        }
+    </script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
