@@ -704,6 +704,8 @@ body {
     .code-block code {
         font-size: 0.8rem;
         line-height: 1.6;
+        white-space: pre-wrap; /* Enable wrapping for long lines */
+        word-break: break-all;
     }
 }
 
