@@ -41,12 +41,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPass').value;
         
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
             alert('Login failed: ' + error.message);
         } else {
             checkUser();
         }
+    });
+
+    document.getElementById('registerLink').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        
+        if (!email || !password) {
+            alert('Please enter email and password for registration.');
+            return;
+        }
+        
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) alert('Registration failed: ' + error.message);
+        else alert('Registration successful! Please login now.');
     });
 
     logoutBtn.addEventListener('click', async () => {
