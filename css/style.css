@@ -1280,6 +1280,7 @@ body {
     
     .projects-grid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
     }
     
     .section-title {
@@ -1289,27 +1290,74 @@ body {
     .about-code {
         margin-top: 2rem;
     }
+
+    .project-card {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 400px;
+    }
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 15px;
+    }
+
     .hero-title {
         font-size: 2rem;
         min-height: 60px;
     }
     
     .avatar-container {
-        width: 180px;
-        height: 180px;
+        width: 160px;
+        height: 160px;
     }
     
     .avatar-circle {
-        width: 150px;
-        height: 150px;
+        width: 140px;
+        height: 140px;
+    }
+
+    .orbit-icon {
+        width: 35px;
+        height: 35px;
+        margin: -17.5px 0 0 -17.5px;
     }
     
     @keyframes orbit {
-        0% { transform: rotate(0deg) translateX(110px) rotate(0deg); }
-        100% { transform: rotate(360deg) translateX(110px) rotate(-360deg); }
+        0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+    }
+    
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .project-card {
+        max-width: 100%;
+    }
+
+    .project-image {
+        height: 180px;
+    }
+
+    .project-title {
+        font-size: 1.3rem;
+    }
+
+    .project-description {
+        font-size: 0.95rem;
+    }
+
+    .project-links {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .btn-link {
+        text-align: center;
+        width: 100%;
     }
     
     .section-title {
@@ -1323,6 +1371,10 @@ body {
     }
     
     .social-icons-nav {
-        display: none; /* Hide social icons in nav on very small screens to save space */
+        display: none; /* Hide social icons in nav on very small screens */
+    }
+
+    .loading-spinner {
+        padding: 2rem;
     }
 }
