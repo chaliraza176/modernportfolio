@@ -275,6 +275,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Clear existing hardcoded projects to avoid duplicates
+            projectsGrid.innerHTML = '';
+
             customProjects.forEach(project => {
                 const article = document.createElement('article');
                 article.className = 'project-card show-animation';
