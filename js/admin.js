@@ -77,7 +77,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             { title: "MillionVerified Clone", description: "Created a copy website focusing on email verification services using HTML, JavaScript and TailwindCSS.", image: "assets/images/millionverified.png", tags: ["HTML", "JavaScript", "TailwindCSS"], live_link: "", github_link: "https://github.com/chaliraza176" },
             { title: "Nvysion Platform", description: "A modern, scalable full-stack e-commerce platform for custom printing services.", image: "assets/images/nvysion-platform.png", tags: ["React 19", "Node.js", "MongoDB", "Express"], live_link: "https://nvysion-platform-4cedc1.netlify.app/", github_link: "https://github.com/chaliraza176/Nvysion-Platform" },
             { title: "UniqVue AI App", description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native.", image: "assets/images/uniqvue.png", tags: ["React Native", "TypeScript", "AI", "Mobile"], live_link: "", github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-" },
-            { title: "Modern E-Commerce Store", description: "A high-end, responsive online store interface featuring modern product grids and dynamic cart functionality.", image: "assets/images/online-store.png", tags: ["HTML", "CSS", "JavaScript", "UX/UI"], live_link: "", github_link: "https://github.com/chaliraza176/online-store" }
+            { title: "Modern E-Commerce Store", description: "A high-end, responsive online store interface featuring modern product grids and dynamic cart functionality.", image: "assets/images/online-store.png", tags: ["HTML", "CSS", "JavaScript", "UX/UI"], live_link: "", github_link: "https://github.com/chaliraza176/online-store" },
+            { 
+                title: "AdFlow Pro", 
+                description: "A premium full-stack ad marketplace featuring 3D interactions, parallax animations, and glassmorphism. Built with role-based access for an innovative campaign experience.", 
+                image: "assets/images/adflow-pro.png", 
+                tags: ["Next.js", "Supabase", "AdTech", "Management"], 
+                live_link: "https://mid-term-project-addflow-pro.vercel.app/", 
+                github_link: "https://github.com/chaliraza176/mid-term-project-addflow-pro" 
+            },
+            { 
+                title: "Air Draw — Hand Gesture Doodler", 
+                description: "A web-based drawing app that uses your webcam and Google MediaPipe AI to let you draw, erase, and pan on a canvas using only hand gestures.", 
+                image: "assets/images/air-draw.png", 
+                tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture"], 
+                live_link: "https://airdrawcontroller.netlify.app/", 
+                github_link: "https://github.com/chaliraza176/air-draw-controller" 
+            }
         ];
 
         const { error } = await supabaseClient.from('projects').insert(legacyProjects);
