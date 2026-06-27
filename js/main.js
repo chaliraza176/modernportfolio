@@ -335,62 +335,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const projectsGrid = document.querySelector('.projects-grid');
     if (projectsGrid && typeof supabaseClient !== 'undefined') {
         const fetchProjects = async () => {
-            const { data: customProjects, error } = await supabaseClient
-                .from('projects')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                console.error('Error fetching projects:', error);
-                // Apply filter to hardcoded ones if fetch failed
-                applyActiveFilter();
-                return;
+            let projectsToRender = null;
+            try {
+                const { data: customProjects, error } = await supabaseClient
+                    .from('projects')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                if (customProjects) {
+                    projectsToRender = customProjects;
+                    // Cache the successful database load
+                    localStorage.setItem('cached-projects', JSON.stringify(customProjects));
+                }
+            } catch (err) {
+                console.warn("Supabase fetch failed on landing page, falling back to localStorage.", err);
+                const cached = localStorage.getItem('cached-projects');
+                if (cached) {
+                    projectsToRender = JSON.parse(cached);
+                }
             }
 
-            // Clear existing hardcoded projects to avoid duplicates
-            projectsGrid.innerHTML = '';
-
-            customProjects.forEach(project => {
-                const article = document.createElement('article');
-                article.className = 'project-card show-animation';
-                
-                // Determine categories dynamically
-                const projectCategories = getProjectCategory(project.tags, project.title);
-                article.setAttribute('data-category', projectCategories.join(' '));
-                
-                // Map legacy image URLs to the user's uploaded screenshots
-                let imageSrc = project.image;
-                if (imageSrc === 'assets/images/air-draw.png') {
-                    imageSrc = 'assets/images/Air Draw — Hand Gesture Doodler.PNG';
-                } else if (imageSrc === 'assets/images/adflow-pro.png') {
-                    imageSrc = 'assets/images/AdFlow Pro.PNG';
-                } else if (imageSrc === 'assets/images/nvysion-platform.png') {
-                    imageSrc = 'assets/images/Nvysion Platform.PNG';
-                }
-                
-                const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
-                
-                article.innerHTML = `
-                    <div class="project-image">
-                        <img src="${imageSrc}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
-                    </div>
-                    <div class="project-content">
-                        <h3 class="project-title">${project.title}</h3>
-                        <p class="project-description">${project.description}</p>
-                        <div class="project-tags">
-                            ${tagsHTML}
+            // Render projects if we got any (from DB or Cache)
+            if (projectsToRender) {
+                projectsGrid.innerHTML = '';
+                projectsToRender.forEach(project => {
+                    const article = document.createElement('article');
+                    article.className = 'project-card show-animation';
+                    
+                    // Determine categories dynamically
+                    const projectCategories = getProjectCategory(project.tags, project.title);
+                    article.setAttribute('data-category', projectCategories.join(' '));
+                    
+                    // Map legacy image URLs to the user's uploaded screenshots
+                    let imageSrc = project.image;
+                    if (imageSrc === 'assets/images/air-draw.png') {
+                        imageSrc = 'assets/images/Air Draw — Hand Gesture Doodler.PNG';
+                    } else if (imageSrc === 'assets/images/adflow-pro.png') {
+                        imageSrc = 'assets/images/AdFlow Pro.PNG';
+                    } else if (imageSrc === 'assets/images/nvysion-platform.png') {
+                        imageSrc = 'assets/images/Nvysion Platform.PNG';
+                    }
+                    
+                    const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                    
+                    article.innerHTML = `
+                        <div class="project-image">
+                            <img src="${imageSrc}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
                         </div>
-                        <div class="project-links">
-                            ${project.live_link ? `<a href="${project.live_link}" target="_blank" rel="noopener" class="btn-link">Live Demo</a>` : ''}
-                            ${project.github_link ? `<a href="${project.github_link}" target="_blank" rel="noopener" class="btn-link">GitHub</a>` : ''}
+                        <div class="project-content">
+                            <h3 class="project-title">${project.title}</h3>
+                            <p class="project-description">${project.description}</p>
+                            <div class="project-tags">
+                                ${tagsHTML}
+                            </div>
+                            <div class="project-links">
+                                ${project.live_link ? `<a href="${project.live_link}" target="_blank" rel="noopener" class="btn-link">Live Demo</a>` : ''}
+                                ${project.github_link ? `<a href="${project.github_link}" target="_blank" rel="noopener" class="btn-link">GitHub</a>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `;
-                
-                projectsGrid.appendChild(article);
-            });
+                    `;
+                    
+                    projectsGrid.appendChild(article);
+                });
+            }
 
-            // Re-apply filter on newly added projects
+            // Always apply the active filter
             applyActiveFilter();
         };
         fetchProjects();

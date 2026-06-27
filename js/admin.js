@@ -22,6 +22,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tagsListContainer = document.getElementById('tagsList');
     const projectsListContainer = document.getElementById('projectsList');
     
+    // Image Uploader & Preview Elements
+    const pImageFile = document.getElementById('pImageFile');
+    const pImage = document.getElementById('pImage');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewText = document.getElementById('previewText');
+
+    function updateImagePreview(src) {
+        if (src && src.trim() !== '') {
+            imagePreview.src = src;
+            imagePreview.style.display = 'block';
+            previewText.style.display = 'none';
+        } else {
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            previewText.style.display = 'block';
+        }
+    }
+
+    if (pImage) {
+        pImage.addEventListener('input', () => {
+            updateImagePreview(pImage.value);
+        });
+    }
+
+    if (pImageFile) {
+        pImageFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64Url = event.target.result;
+                    pImage.value = base64Url;
+                    updateImagePreview(base64Url);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
     let currentTags = [];
     let isEditing = false;
     const ADMIN_EMAIL = 'alirazachh176@gmail.com';
@@ -293,12 +332,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isEditing) {
             try {
                 const { error } = await supabaseClient.from('projects').update(projectData).eq('id', projectIDInput.value);
-                if (!error) { 
-                    alert('Project Updated in Database!'); 
-                    resetForm(); 
-                    fetchProjects();
-                    return;
-                }
+                if (error) throw error;
+                alert('Project Updated in Database!'); 
+                resetForm(); 
+                fetchProjects();
+                return;
             } catch (err) {
                 console.warn("DB save failed, falling back to local storage.", err);
             }
@@ -313,12 +351,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             try {
                 const { error } = await supabaseClient.from('projects').insert([projectData]);
-                if (!error) { 
-                    alert('Project Saved to Database!'); 
-                    resetForm(); 
-                    fetchProjects();
-                    return;
-                }
+                if (error) throw error;
+                alert('Project Saved to Database!'); 
+                resetForm(); 
+                fetchProjects();
+                return;
             } catch (err) {
                 console.warn("DB save failed, falling back to local storage.", err);
             }
@@ -343,6 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pTitle').value = project.title;
         document.getElementById('pDesc').value = project.description;
         document.getElementById('pImage').value = project.image;
+        updateImagePreview(project.image); // Load edit preview
         document.getElementById('pLive').value = project.live_link || '';
         document.getElementById('pGithub').value = project.github_link || '';
         currentTags = [...project.tags];
@@ -378,10 +416,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (confirm('Delete this project?')) {
             try {
                 const { error } = await supabaseClient.from('projects').delete().eq('id', id);
-                if (!error) {
-                    fetchProjects();
-                    return;
-                }
+                if (error) throw error;
+                fetchProjects();
+                return;
             } catch (err) {
                 console.warn("DB delete failed, falling back to local storage.", err);
             }
@@ -401,6 +438,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.textContent = 'SAVE PROJECT';
         cancelEditBtn.style.display = 'none';
         adminForm.reset();
+        updateImagePreview(''); // Clear preview
         document.getElementById('pCategory').value = 'react';
         currentTags = [];
         renderTags();
