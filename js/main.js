@@ -210,9 +210,57 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         
         localStorage.setItem('themeColor', baseColor);
+        if (!isInitial) {
+            stopAutoCycle();
+            if (autoCycleCheckbox) autoCycleCheckbox.checked = false;
+        }
         if (!isInitial && colorPickerModal) {
             colorPickerModal.classList.remove('active');
         }
+    }
+
+    // Auto Cycle Colors System
+    const premiumColors = [
+        '#8B0000', // Dark Red
+        '#0066CC', // Blue
+        '#00AA00', // Green
+        '#FF6600', // Orange
+        '#9900CC', // Purple
+        '#CC0066', // Pink
+        '#FFD700', // Gold
+        '#00CED1', // Cyan
+        '#ff3b30', // Vibrant Red
+        '#af52de', // Vibrant Purple
+        '#34c759', // Vibrant Green
+        '#007aff', // Vibrant Blue
+        '#ffcc00', // Vibrant Yellow
+        '#5856d6', // Indigo
+        '#ff2d55'  // Coral/Pink
+    ];
+    let autoCycleInterval = null;
+    const autoCycleCheckbox = document.getElementById('autoCycleCheckbox');
+
+    function startAutoCycle() {
+        if (autoCycleInterval) clearInterval(autoCycleInterval);
+        
+        let index = premiumColors.indexOf(localStorage.getItem('themeColor'));
+        if (index === -1) index = 0;
+        
+        autoCycleInterval = setInterval(() => {
+            index = (index + 1) % premiumColors.length;
+            const nextColor = premiumColors[index];
+            applyThemeColor(nextColor, true);
+        }, 5000);
+        
+        localStorage.setItem('autoCycleColors', 'true');
+    }
+
+    function stopAutoCycle() {
+        if (autoCycleInterval) {
+            clearInterval(autoCycleInterval);
+            autoCycleInterval = null;
+        }
+        localStorage.setItem('autoCycleColors', 'false');
     }
 
     // Event Listeners for Theme Switcher
@@ -236,14 +284,38 @@ document.addEventListener('DOMContentLoaded', () => {
         applyCustomBtn.addEventListener('click', () => applyThemeColor(customColorInput.value));
     }
 
-    // Load saved theme
+    if (autoCycleCheckbox) {
+        autoCycleCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                startAutoCycle();
+            } else {
+                stopAutoCycle();
+            }
+        });
+    }
+
+    // Load saved theme and cycle state
     const savedColor = localStorage.getItem('themeColor');
     if (savedColor) applyThemeColor(savedColor, true);
+
+    const savedAutoCycle = localStorage.getItem('autoCycleColors') === 'true';
+    if (autoCycleCheckbox) {
+        autoCycleCheckbox.checked = savedAutoCycle;
+        if (savedAutoCycle) {
+            startAutoCycle();
+        }
+    }
 
     // Sync theme across tabs
     window.addEventListener('storage', (e) => {
         if (e.key === 'themeColor' && e.newValue) {
             applyThemeColor(e.newValue);
+        }
+        if (e.key === 'autoCycleColors') {
+            const isAuto = e.newValue === 'true';
+            if (autoCycleCheckbox) autoCycleCheckbox.checked = isAuto;
+            if (isAuto) startAutoCycle();
+            else stopAutoCycle();
         }
     });
 

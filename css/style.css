@@ -227,6 +227,73 @@ body {
     transform: translateY(-2px);
 }
 
+/* Auto Cycle Switch Toggle */
+.auto-cycle-container {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.auto-cycle-container span {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: 0.4s;
+    border-radius: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-light);
+    transition: 0.4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#autoCycleCheckbox:checked + .slider {
+    background-color: var(--secondary-color);
+}
+
+#autoCycleCheckbox:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: var(--dark-bg);
+}
+
 .navbar-toggle {
     display: none;
     flex-direction: column;
