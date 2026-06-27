@@ -242,9 +242,67 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 3. CRUD Operations ---
     async function fetchProjects() {
+        const defaultProjectsList = [
+            {
+                id: 'default-1',
+                title: "Air Draw — Hand Gesture Doodler",
+                description: "A web-based drawing app that uses your webcam and Google MediaPipe AI to let you draw, erase, and pan on a canvas using only hand gestures — no mouse, no touch required. Features real-time 21-point hand landmark detection.",
+                image: "assets/images/Air Draw — Hand Gesture Doodler.PNG",
+                tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture"],
+                live_link: "https://airdrawcontroller.netlify.app/",
+                github_link: "https://github.com/chaliraza176/air-draw-controller"
+            },
+            {
+                id: 'default-2',
+                title: "AdFlow Pro",
+                description: "A premium full-stack ad marketplace featuring 3D interactions, parallax animations, and glassmorphism. Built with role-based access for accurate campaign monitoring.",
+                image: "assets/images/AdFlow Pro.PNG",
+                tags: ["Next.js", "Supabase", "AdTech", "Management"],
+                live_link: "https://mid-term-project-addflow-pro.vercel.app/",
+                github_link: "https://github.com/chaliraza176/mid-term-project-addflow-pro"
+            },
+            {
+                id: 'default-3',
+                title: "Modern E-Commerce Store",
+                description: "A high-end, responsive online store interface featuring modern product grids, dynamic cart functionality, and elegant minimalist aesthetics for a premium user experience.",
+                image: "assets/images/online-store.png",
+                tags: ["HTML", "CSS", "JavaScript", "UX/UI"],
+                live_link: "",
+                github_link: "https://github.com/chaliraza176/online-store"
+            },
+            {
+                id: 'default-4',
+                title: "Nvysion Platform",
+                description: "A modern, scalable full-stack e-commerce platform for custom printing services. Features seamless 4over API integration, real-time pricing engine, and comprehensive order management.",
+                image: "assets/images/Nvysion Platform.PNG",
+                tags: ["React 19", "Node.js", "MongoDB", "Express"],
+                live_link: "https://nvysion-platform-4cedc1.netlify.app/",
+                github_link: "https://github.com/chaliraza176/Nvysion-Platform"
+            },
+            {
+                id: 'default-5',
+                title: "UniqVue AI App",
+                description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native. Features include automated photo sorting, face recognition, and seamless group sharing.",
+                image: "assets/images/uniqvue.png",
+                tags: ["React Native", "TypeScript", "AI", "Mobile"],
+                live_link: "",
+                github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-"
+            },
+            {
+                id: 'default-6',
+                title: "Healthcare & Appointment App",
+                description: "A Flutter-based medical solution featuring appointment booking, patient management dashboard, and role-based secure login systems for doctors and patients.",
+                image: "assets/images/healthcare.png",
+                tags: ["Dart", "Flutter", "Medical UI"],
+                live_link: "",
+                github_link: "https://github.com/chaliraza176/fluter_project/tree/main/lab%20mid"
+            }
+        ];
+
         try {
             const { data, error } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
-            if (!error && data) {
+            if (error) throw error;
+            if (data) {
                 renderProjectsList(data);
                 localStorage.setItem('cached-projects', JSON.stringify(data));
                 return;
@@ -253,14 +311,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn("Supabase fetch failed, falling back to local storage.", err);
         }
 
-        // Fallback to localStorage
-        const cached = localStorage.getItem('cached-projects');
-        if (cached) {
-            renderProjectsList(JSON.parse(cached));
-        } else {
-            // Default to legacyProjects
-            renderProjectsList(legacyProjects);
-        }
+        // Fallback to localStorage with default projects merge
+        let cached = localStorage.getItem('cached-projects');
+        let parsed = cached ? JSON.parse(cached) : [];
+        
+        // Ensure all defaults are present
+        defaultProjectsList.forEach(defProj => {
+            const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
+            if (!exists) {
+                parsed.push(defProj);
+            }
+        });
+        localStorage.setItem('cached-projects', JSON.stringify(parsed));
+        renderProjectsList(parsed);
     }
 
     function renderProjectsList(projects) {
@@ -288,7 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <h3 class="project-title" style="color: var(--secondary-color);">${project.title}</h3>
                     <p class="project-description" style="font-size: 0.85rem; height: 50px; overflow: hidden; margin: 10px 0;">${project.description}</p>
                     <div class="project-tags">
-                        ${project.tags.map(tag => `<span class="tag" style="background: rgba(var(--secondary-color-rgb), 0.1); color: var(--secondary-color); font-size:0.7rem;">${tag}</span>`).join('')}
+                        ${project.tags.filter(tag => !tag.toLowerCase().startsWith('pos:')).map(tag => `<span class="tag" style="background: rgba(var(--secondary-color-rgb), 0.1); color: var(--secondary-color); font-size:0.7rem;">${tag}</span>`).join('')}
                     </div>
                     <div style="display:flex; gap:10px; margin-top:20px;">
                         <button class="btn-edit" onclick='editProject(${JSON.stringify(project).replace(/'/g, "&apos;")})' style="flex:1; background:var(--secondary-color); border:none; padding:8px; border-radius:5px; cursor:pointer; font-weight:bold;">Edit</button>
@@ -304,10 +367,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     adminForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Clean out any existing category tags from currentTags to avoid duplication/conflicts
+        // Clean out any existing category and position tags from currentTags
         let cleanedTags = currentTags.filter(t => {
             const lower = t.toLowerCase();
-            return lower !== 'react' && lower !== 'portfolio' && lower !== 'app' && lower !== 'apps';
+            return lower !== 'react' && lower !== 'portfolio' && lower !== 'app' && lower !== 'apps' && !lower.startsWith('pos:');
         });
 
         // Add the newly selected category tag
@@ -318,6 +381,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             cleanedTags.push('Portfolio');
         } else if (categoryVal === 'apps') {
             cleanedTags.push('App');
+        }
+
+        // Add position tag if specified
+        const positionVal = document.getElementById('pPosition').value;
+        if (positionVal && parseInt(positionVal) > 0) {
+            cleanedTags.push('pos:' + parseInt(positionVal));
         }
 
         const projectData = {
@@ -386,6 +455,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentTags = [...project.tags];
         renderTags();
 
+        // Extract position from tags
+        const posTag = project.tags.find(t => t.toLowerCase().startsWith('pos:'));
+        if (posTag) {
+            document.getElementById('pPosition').value = parseInt(posTag.split(':')[1]) || '';
+        } else {
+            document.getElementById('pPosition').value = '';
+        }
+
         // Determine category for dropdown
         const lowerTags = project.tags.map(t => t.toLowerCase());
         const lowerTitle = project.title.toLowerCase();
@@ -440,6 +517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         adminForm.reset();
         updateImagePreview(''); // Clear preview
         document.getElementById('pCategory').value = 'react';
+        document.getElementById('pPosition').value = '';
         currentTags = [];
         renderTags();
     }

@@ -332,6 +332,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === 9. Load Custom Projects from Supabase ===
+    const defaultProjectsList = [
+        {
+            id: 'default-1',
+            title: "Air Draw — Hand Gesture Doodler",
+            description: "A web-based drawing app that uses your webcam and Google MediaPipe AI to let you draw, erase, and pan on a canvas using only hand gestures — no mouse, no touch required. Features real-time 21-point hand landmark detection.",
+            image: "assets/images/Air Draw — Hand Gesture Doodler.PNG",
+            tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture", "pos:1"],
+            live_link: "https://airdrawcontroller.netlify.app/",
+            github_link: "https://github.com/chaliraza176/air-draw-controller"
+        },
+        {
+            id: 'default-2',
+            title: "AdFlow Pro",
+            description: "A premium full-stack ad marketplace featuring 3D interactions, parallax animations, and glassmorphism. Built with role-based access for accurate campaign monitoring.",
+            image: "assets/images/AdFlow Pro.PNG",
+            tags: ["Next.js", "Supabase", "AdTech", "Management", "pos:2"],
+            live_link: "https://mid-term-project-addflow-pro.vercel.app/",
+            github_link: "https://github.com/chaliraza176/mid-term-project-addflow-pro"
+        },
+        {
+            id: 'default-3',
+            title: "Modern E-Commerce Store",
+            description: "A high-end, responsive online store interface featuring modern product grids, dynamic cart functionality, and elegant minimalist aesthetics for a premium user experience.",
+            image: "assets/images/online-store.png",
+            tags: ["HTML", "CSS", "JavaScript", "UX/UI", "pos:3"],
+            live_link: "",
+            github_link: "https://github.com/chaliraza176/online-store"
+        },
+        {
+            id: 'default-4',
+            title: "Nvysion Platform",
+            description: "A modern, scalable full-stack e-commerce platform for custom printing services. Features seamless 4over API integration, real-time pricing engine, and comprehensive order management.",
+            image: "assets/images/Nvysion Platform.PNG",
+            tags: ["React 19", "Node.js", "MongoDB", "Express", "pos:4"],
+            live_link: "https://nvysion-platform-4cedc1.netlify.app/",
+            github_link: "https://github.com/chaliraza176/Nvysion-Platform"
+        },
+        {
+            id: 'default-5',
+            title: "UniqVue AI App",
+            description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native. Features include automated photo sorting, face recognition, and seamless group sharing.",
+            image: "assets/images/uniqvue.png",
+            tags: ["React Native", "TypeScript", "AI", "Mobile", "pos:5"],
+            live_link: "",
+            github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-"
+        },
+        {
+            id: 'default-6',
+            title: "Healthcare & Appointment App",
+            description: "A Flutter-based medical solution featuring appointment booking, patient management dashboard, and role-based secure login systems for doctors and patients.",
+            image: "assets/images/healthcare.png",
+            tags: ["Dart", "Flutter", "Medical UI", "pos:6"],
+            live_link: "",
+            github_link: "https://github.com/chaliraza176/fluter_project/tree/main/lab%20mid"
+        }
+    ];
+
+    function sortProjectsByPosition(projects) {
+        return projects.sort((a, b) => {
+            const getPos = (proj) => {
+                if (!proj.tags) return Infinity;
+                const posTag = proj.tags.find(t => t.toLowerCase().startsWith('pos:'));
+                if (posTag) {
+                    const num = parseInt(posTag.split(':')[1]);
+                    return isNaN(num) ? Infinity : num;
+                }
+                return Infinity;
+            };
+            const posA = getPos(a);
+            const posB = getPos(b);
+            if (posA !== posB) {
+                return posA - posB;
+            }
+            const dateA = new Date(a.created_at || a.id || 0);
+            const dateB = new Date(b.created_at || b.id || 0);
+            return dateB - dateA;
+        });
+    }
+
     const projectsGrid = document.querySelector('.projects-grid');
     if (projectsGrid && typeof supabaseClient !== 'undefined') {
         const fetchProjects = async () => {
@@ -350,14 +429,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.warn("Supabase fetch failed on landing page, falling back to localStorage.", err);
-                const cached = localStorage.getItem('cached-projects');
-                if (cached) {
-                    projectsToRender = JSON.parse(cached);
-                }
+                let cached = localStorage.getItem('cached-projects');
+                let parsed = cached ? JSON.parse(cached) : [];
+                
+                // Ensure all default projects are present
+                defaultProjectsList.forEach(defProj => {
+                    const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
+                    if (!exists) {
+                        parsed.push(defProj);
+                    }
+                });
+                localStorage.setItem('cached-projects', JSON.stringify(parsed));
+                projectsToRender = parsed;
             }
 
             // Render projects if we got any (from DB or Cache)
             if (projectsToRender) {
+                projectsToRender = sortProjectsByPosition(projectsToRender);
                 projectsGrid.innerHTML = '';
                 projectsToRender.forEach(project => {
                     const article = document.createElement('article');
@@ -377,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         imageSrc = 'assets/images/Nvysion Platform.PNG';
                     }
                     
-                    const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                    const tagsHTML = project.tags.filter(tag => !tag.toLowerCase().startsWith('pos:')).map(tag => `<span class="tag">${tag}</span>`).join('');
                     
                     article.innerHTML = `
                         <div class="project-image">
