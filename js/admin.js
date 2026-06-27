@@ -241,6 +241,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- 3. CRUD Operations ---
+    // --- 3. CRUD Operations ---
+    function sortProjectsByPosition(projects) {
+        return projects.sort((a, b) => {
+            const getPos = (proj) => {
+                if (!proj.tags) return Infinity;
+                const posTag = proj.tags.find(t => t.toLowerCase().startsWith('pos:'));
+                if (posTag) {
+                    const num = parseInt(posTag.split(':')[1]);
+                    return isNaN(num) ? Infinity : num;
+                }
+                return Infinity;
+            };
+            const posA = getPos(a);
+            const posB = getPos(b);
+            if (posA !== posB) {
+                return posA - posB;
+            }
+            
+            const getTimestamp = (proj) => {
+                if (proj.created_at) {
+                    const d = new Date(proj.created_at).getTime();
+                    if (!isNaN(d)) return d;
+                }
+                if (typeof proj.id === 'number') {
+                    return proj.id;
+                }
+                if (typeof proj.id === 'string' && proj.id.startsWith('default-')) {
+                    const num = parseInt(proj.id.split('-')[1]);
+                    return isNaN(num) ? 0 : num;
+                }
+                const numId = parseInt(proj.id);
+                return isNaN(numId) ? 0 : numId;
+            };
+            
+            return getTimestamp(b) - getTimestamp(a);
+        });
+    }
+
     async function fetchProjects() {
         const defaultProjectsList = [
             {
@@ -248,7 +286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "Air Draw — Hand Gesture Doodler",
                 description: "A web-based drawing app that uses your webcam and Google MediaPipe AI to let you draw, erase, and pan on a canvas using only hand gestures — no mouse, no touch required. Features real-time 21-point hand landmark detection.",
                 image: "assets/images/Air Draw — Hand Gesture Doodler.PNG",
-                tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture"],
+                tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture", "pos:1"],
                 live_link: "https://airdrawcontroller.netlify.app/",
                 github_link: "https://github.com/chaliraza176/air-draw-controller"
             },
@@ -257,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "AdFlow Pro",
                 description: "A premium full-stack ad marketplace featuring 3D interactions, parallax animations, and glassmorphism. Built with role-based access for accurate campaign monitoring.",
                 image: "assets/images/AdFlow Pro.PNG",
-                tags: ["Next.js", "Supabase", "AdTech", "Management"],
+                tags: ["Next.js", "Supabase", "AdTech", "Management", "pos:2"],
                 live_link: "https://mid-term-project-addflow-pro.vercel.app/",
                 github_link: "https://github.com/chaliraza176/mid-term-project-addflow-pro"
             },
@@ -266,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "Modern E-Commerce Store",
                 description: "A high-end, responsive online store interface featuring modern product grids, dynamic cart functionality, and elegant minimalist aesthetics for a premium user experience.",
                 image: "assets/images/online-store.png",
-                tags: ["HTML", "CSS", "JavaScript", "UX/UI"],
+                tags: ["HTML", "CSS", "JavaScript", "UX/UI", "pos:3"],
                 live_link: "",
                 github_link: "https://github.com/chaliraza176/online-store"
             },
@@ -275,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "Nvysion Platform",
                 description: "A modern, scalable full-stack e-commerce platform for custom printing services. Features seamless 4over API integration, real-time pricing engine, and comprehensive order management.",
                 image: "assets/images/Nvysion Platform.PNG",
-                tags: ["React 19", "Node.js", "MongoDB", "Express"],
+                tags: ["React 19", "Node.js", "MongoDB", "Express", "pos:4"],
                 live_link: "https://nvysion-platform-4cedc1.netlify.app/",
                 github_link: "https://github.com/chaliraza176/Nvysion-Platform"
             },
@@ -284,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "UniqVue AI App",
                 description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native. Features include automated photo sorting, face recognition, and seamless group sharing.",
                 image: "assets/images/uniqvue.png",
-                tags: ["React Native", "TypeScript", "AI", "Mobile"],
+                tags: ["React Native", "TypeScript", "AI", "Mobile", "pos:5"],
                 live_link: "",
                 github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-"
             },
@@ -293,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: "Healthcare & Appointment App",
                 description: "A Flutter-based medical solution featuring appointment booking, patient management dashboard, and role-based secure login systems for doctors and patients.",
                 image: "assets/images/healthcare.png",
-                tags: ["Dart", "Flutter", "Medical UI"],
+                tags: ["Dart", "Flutter", "Medical UI", "pos:6"],
                 live_link: "",
                 github_link: "https://github.com/chaliraza176/fluter_project/tree/main/lab%20mid"
             }
@@ -303,7 +341,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data, error } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
             if (error) throw error;
             if (data) {
-                renderProjectsList(data);
+                const sorted = sortProjectsByPosition(data);
+                renderProjectsList(sorted);
                 localStorage.setItem('cached-projects', JSON.stringify(data));
                 return;
             }
@@ -311,19 +350,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn("Supabase fetch failed, falling back to local storage.", err);
         }
 
-        // Fallback to localStorage with default projects merge
+        // Fallback to localStorage with one-time defaults migration
         let cached = localStorage.getItem('cached-projects');
         let parsed = cached ? JSON.parse(cached) : [];
         
-        // Ensure all defaults are present
-        defaultProjectsList.forEach(defProj => {
-            const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
-            if (!exists) {
-                parsed.push(defProj);
-            }
-        });
-        localStorage.setItem('cached-projects', JSON.stringify(parsed));
-        renderProjectsList(parsed);
+        if (localStorage.getItem('defaults-migrated-v2') !== 'true') {
+            defaultProjectsList.forEach(defProj => {
+                const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
+                if (!exists) {
+                    parsed.push(defProj);
+                }
+            });
+            localStorage.setItem('cached-projects', JSON.stringify(parsed));
+            localStorage.setItem('defaults-migrated-v2', 'true');
+        }
+
+        // Force-inject default positions if missing in current cache
+        if (localStorage.getItem('defaults-positioned-v3') !== 'true') {
+            parsed = parsed.map(proj => {
+                const def = defaultProjectsList.find(d => d.title.toLowerCase().trim() === proj.title.toLowerCase().trim());
+                if (def) {
+                    const hasPos = proj.tags.some(t => t.toLowerCase().startsWith('pos:'));
+                    if (!hasPos) {
+                        const defPosTag = def.tags.find(t => t.toLowerCase().startsWith('pos:'));
+                        if (defPosTag) {
+                            proj.tags.push(defPosTag);
+                        }
+                    }
+                }
+                return proj;
+            });
+            localStorage.setItem('cached-projects', JSON.stringify(parsed));
+            localStorage.setItem('defaults-positioned-v3', 'true');
+        }
+        
+        const sorted = sortProjectsByPosition(parsed);
+        renderProjectsList(sorted);
     }
 
     function renderProjectsList(projects) {

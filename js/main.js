@@ -405,9 +405,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (posA !== posB) {
                 return posA - posB;
             }
-            const dateA = new Date(a.created_at || a.id || 0);
-            const dateB = new Date(b.created_at || b.id || 0);
-            return dateB - dateA;
+            
+            const getTimestamp = (proj) => {
+                if (proj.created_at) {
+                    const d = new Date(proj.created_at).getTime();
+                    if (!isNaN(d)) return d;
+                }
+                if (typeof proj.id === 'number') {
+                    return proj.id;
+                }
+                if (typeof proj.id === 'string' && proj.id.startsWith('default-')) {
+                    const num = parseInt(proj.id.split('-')[1]);
+                    return isNaN(num) ? 0 : num;
+                }
+                const numId = parseInt(proj.id);
+                return isNaN(numId) ? 0 : numId;
+            };
+            
+            return getTimestamp(b) - getTimestamp(a);
         });
     }
 
@@ -432,14 +447,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 let cached = localStorage.getItem('cached-projects');
                 let parsed = cached ? JSON.parse(cached) : [];
                 
-                // Ensure all default projects are present
-                defaultProjectsList.forEach(defProj => {
-                    const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
-                    if (!exists) {
-                        parsed.push(defProj);
-                    }
-                });
-                localStorage.setItem('cached-projects', JSON.stringify(parsed));
+                if (localStorage.getItem('defaults-migrated-v2') !== 'true') {
+                    defaultProjectsList.forEach(defProj => {
+                        const exists = parsed.some(p => p.title.toLowerCase().trim() === defProj.title.toLowerCase().trim());
+                        if (!exists) {
+                            parsed.push(defProj);
+                        }
+                    });
+                    localStorage.setItem('cached-projects', JSON.stringify(parsed));
+                    localStorage.setItem('defaults-migrated-v2', 'true');
+                }
+
+                // Force-inject default positions if missing in current cache
+                if (localStorage.getItem('defaults-positioned-v3') !== 'true') {
+                    parsed = parsed.map(proj => {
+                        const def = defaultProjectsList.find(d => d.title.toLowerCase().trim() === proj.title.toLowerCase().trim());
+                        if (def) {
+                            const hasPos = proj.tags.some(t => t.toLowerCase().startsWith('pos:'));
+                            if (!hasPos) {
+                                const defPosTag = def.tags.find(t => t.toLowerCase().startsWith('pos:'));
+                                if (defPosTag) {
+                                    proj.tags.push(defPosTag);
+                                }
+                            }
+                        }
+                        return proj;
+                    });
+                    localStorage.setItem('cached-projects', JSON.stringify(parsed));
+                    localStorage.setItem('defaults-positioned-v3', 'true');
+                }
                 projectsToRender = parsed;
             }
 
