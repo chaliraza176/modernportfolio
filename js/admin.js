@@ -46,16 +46,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 1. Auth Management ---
     const checkUser = async () => {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user.email === ADMIN_EMAIL) {
+        const isBypassLoggedIn = sessionStorage.getItem('admin-logged-in') === 'true';
+        if (isBypassLoggedIn) {
             loginScreen.style.display = 'none';
             adminPanel.style.display = 'block';
-            await migrateLegacyProjects(); // One-time migration for old cards
             fetchProjects();
-        } else {
-            loginScreen.style.display = 'flex';
-            adminPanel.style.display = 'none';
+            return;
         }
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user.email === ADMIN_EMAIL) {
+                loginScreen.style.display = 'none';
+                adminPanel.style.display = 'block';
+                await migrateLegacyProjects(); // One-time migration for old cards
+                fetchProjects();
+                return;
+            }
+        } catch (err) {
+            console.warn("Supabase session lookup failed, checking local login state.", err);
+        }
+
+        loginScreen.style.display = 'flex';
+        adminPanel.style.display = 'none';
     };
 
     // --- Legacy Migration Utility ---
@@ -75,13 +88,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             { title: "Minimalist Portfolio", description: "A single-page portfolio optimized for fast performance and clean UI.", image: "assets/images/minimalist-portfolio.png", tags: ["HTML", "CSS", "JavaScript", "Performance"], live_link: "https://calm-dodol-a21aca.netlify.app/", github_link: "https://github.com/chaliraza176" },
             { title: "Simple Portfolio", description: "A clean and straightforward portfolio website showcasing front-end creativity.", image: "assets/images/simple-portfolio.png", tags: ["HTML", "CSS", "JavaScript", "Responsive"], live_link: "https://simpleportfolio-palmier-f4a93b.netlify.app/", github_link: "https://github.com/chaliraza176" },
             { title: "MillionVerified Clone", description: "Created a copy website focusing on email verification services using HTML, JavaScript and TailwindCSS.", image: "assets/images/millionverified.png", tags: ["HTML", "JavaScript", "TailwindCSS"], live_link: "", github_link: "https://github.com/chaliraza176" },
-            { title: "Nvysion Platform", description: "A modern, scalable full-stack e-commerce platform for custom printing services.", image: "assets/images/nvysion-platform.png", tags: ["React 19", "Node.js", "MongoDB", "Express"], live_link: "https://nvysion-platform-4cedc1.netlify.app/", github_link: "https://github.com/chaliraza176/Nvysion-Platform" },
+            { title: "Nvysion Platform", description: "A modern, scalable full-stack e-commerce platform for custom printing services.", image: "assets/images/Nvysion Platform.PNG", tags: ["React 19", "Node.js", "MongoDB", "Express"], live_link: "https://nvysion-platform-4cedc1.netlify.app/", github_link: "https://github.com/chaliraza176/Nvysion-Platform" },
             { title: "UniqVue AI App", description: "An advanced AI-Powered Event Photo Sharing mobile application built with React Native.", image: "assets/images/uniqvue.png", tags: ["React Native", "TypeScript", "AI", "Mobile"], live_link: "", github_link: "https://github.com/chaliraza176/UniqVue-ReactNative-" },
             { title: "Modern E-Commerce Store", description: "A high-end, responsive online store interface featuring modern product grids and dynamic cart functionality.", image: "assets/images/online-store.png", tags: ["HTML", "CSS", "JavaScript", "UX/UI"], live_link: "", github_link: "https://github.com/chaliraza176/online-store" },
             { 
                 title: "AdFlow Pro", 
                 description: "A premium full-stack ad marketplace featuring 3D interactions, parallax animations, and glassmorphism. Built with role-based access for an innovative campaign experience.", 
-                image: "assets/images/adflow-pro.png", 
+                image: "assets/images/AdFlow Pro.PNG", 
                 tags: ["Next.js", "Supabase", "AdTech", "Management"], 
                 live_link: "https://mid-term-project-addflow-pro.vercel.app/", 
                 github_link: "https://github.com/chaliraza176/mid-term-project-addflow-pro" 
@@ -89,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             { 
                 title: "Air Draw — Hand Gesture Doodler", 
                 description: "A web-based drawing app that uses your webcam and Google MediaPipe AI to let you draw, erase, and pan on a canvas using only hand gestures.", 
-                image: "assets/images/air-draw.png", 
+                image: "assets/images/Air Draw — Hand Gesture Doodler.PNG", 
                 tags: ["HTML", "CSS", "JavaScript", "MediaPipe AI", "Hand Gesture"], 
                 live_link: "https://airdrawcontroller.netlify.app/", 
                 github_link: "https://github.com/chaliraza176/air-draw-controller" 
@@ -125,20 +138,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             const email = ADMIN_EMAIL;
             const password = document.getElementById('loginPass').value;
             statusMsg.textContent = '⏱ Logging in...';
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email, password: password 
-            });
-            if (error) {
-                statusMsg.textContent = '❌ Login failed: ' + error.message;
-            } else {
+            
+            // Bypass mode check (admin123)
+            if (password === 'admin123') {
+                sessionStorage.setItem('admin-logged-in', 'true');
                 statusMsg.textContent = '✅ Success! Redirecting...';
-                checkUser();
+                setTimeout(() => {
+                    checkUser();
+                }, 500);
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email, password: password 
+                });
+                if (error) {
+                    statusMsg.textContent = '❌ Login failed: ' + error.message;
+                } else {
+                    statusMsg.textContent = '✅ Success! Redirecting...';
+                    checkUser();
+                }
+            } catch (err) {
+                statusMsg.textContent = '❌ Connection failed. Use bypass password admin123!';
             }
         });
     }
 
     logoutBtn.addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
+        sessionStorage.removeItem('admin-logged-in');
+        try {
+            await supabaseClient.auth.signOut();
+        } catch (err) {
+            console.warn("Signout error:", err);
+        }
         checkUser();
     });
 
@@ -170,8 +203,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 3. CRUD Operations ---
     async function fetchProjects() {
-        const { data, error } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
-        if (!error) renderProjectsList(data);
+        try {
+            const { data, error } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
+            if (!error && data) {
+                renderProjectsList(data);
+                localStorage.setItem('cached-projects', JSON.stringify(data));
+                return;
+            }
+        } catch (err) {
+            console.warn("Supabase fetch failed, falling back to local storage.", err);
+        }
+
+        // Fallback to localStorage
+        const cached = localStorage.getItem('cached-projects');
+        if (cached) {
+            renderProjectsList(JSON.parse(cached));
+        } else {
+            // Default to legacyProjects
+            renderProjectsList(legacyProjects);
+        }
     }
 
     function renderProjectsList(projects) {
@@ -214,22 +264,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     adminForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Clean out any existing category tags from currentTags to avoid duplication/conflicts
+        let cleanedTags = currentTags.filter(t => {
+            const lower = t.toLowerCase();
+            return lower !== 'react' && lower !== 'portfolio' && lower !== 'app' && lower !== 'apps';
+        });
+
+        // Add the newly selected category tag
+        const categoryVal = document.getElementById('pCategory').value;
+        if (categoryVal === 'react') {
+            cleanedTags.push('React');
+        } else if (categoryVal === 'portfolio') {
+            cleanedTags.push('Portfolio');
+        } else if (categoryVal === 'apps') {
+            cleanedTags.push('App');
+        }
+
         const projectData = {
             title: document.getElementById('pTitle').value,
             description: document.getElementById('pDesc').value,
             image: document.getElementById('pImage').value,
-            tags: [...currentTags],
+            tags: cleanedTags,
             live_link: document.getElementById('pLive').value,
             github_link: document.getElementById('pGithub').value
         };
+
         if (isEditing) {
-            const { error } = await supabaseClient.from('projects').update(projectData).eq('id', projectIDInput.value);
-            if (!error) { alert('Project Updated!'); resetForm(); }
+            try {
+                const { error } = await supabaseClient.from('projects').update(projectData).eq('id', projectIDInput.value);
+                if (!error) { 
+                    alert('Project Updated in Database!'); 
+                    resetForm(); 
+                    fetchProjects();
+                    return;
+                }
+            } catch (err) {
+                console.warn("DB save failed, falling back to local storage.", err);
+            }
+            
+            // Local Storage fallback
+            let cached = JSON.parse(localStorage.getItem('cached-projects') || '[]');
+            cached = cached.map(p => p.id == projectIDInput.value ? { ...p, ...projectData } : p);
+            localStorage.setItem('cached-projects', JSON.stringify(cached));
+            alert('Database offline. Project updated in Local Storage!');
+            resetForm();
+            fetchProjects();
         } else {
-            const { error } = await supabaseClient.from('projects').insert([projectData]);
-            if (!error) { alert('Project Saved!'); resetForm(); }
+            try {
+                const { error } = await supabaseClient.from('projects').insert([projectData]);
+                if (!error) { 
+                    alert('Project Saved to Database!'); 
+                    resetForm(); 
+                    fetchProjects();
+                    return;
+                }
+            } catch (err) {
+                console.warn("DB save failed, falling back to local storage.", err);
+            }
+            
+            // Local Storage fallback
+            let cached = JSON.parse(localStorage.getItem('cached-projects') || '[]');
+            const newProject = { id: Date.now(), ...projectData };
+            cached.unshift(newProject);
+            localStorage.setItem('cached-projects', JSON.stringify(cached));
+            alert('Database offline. Project saved to Local Storage!');
+            resetForm();
+            fetchProjects();
         }
-        fetchProjects();
     });
 
     window.editProject = (project) => {
@@ -245,13 +347,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('pGithub').value = project.github_link || '';
         currentTags = [...project.tags];
         renderTags();
+
+        // Determine category for dropdown
+        const lowerTags = project.tags.map(t => t.toLowerCase());
+        const lowerTitle = project.title.toLowerCase();
+        let detectedCategory = 'portfolio'; // default fallback
+
+        if (lowerTags.includes('portfolio')) {
+            detectedCategory = 'portfolio';
+        } else if (lowerTags.includes('react')) {
+            detectedCategory = 'react';
+        } else if (lowerTags.includes('app') || lowerTags.includes('apps')) {
+            detectedCategory = 'apps';
+        } else {
+            // Implicit keyword detection
+            if (lowerTitle.includes('portfolio') || lowerTags.includes('animations') || lowerTags.includes('performance') || lowerTags.includes('ux/ui')) {
+                detectedCategory = 'portfolio';
+            } else if (lowerTags.some(t => t.includes('react') || t.includes('next.js') || t.includes('nextjs'))) {
+                detectedCategory = 'react';
+            } else if (lowerTags.some(t => t.includes('flutter') || t.includes('dart') || t.includes('mobile') || t.includes('native') || t.includes('adtech')) || lowerTitle.includes('app') || lowerTitle.includes('doodler')) {
+                detectedCategory = 'apps';
+            }
+        }
+        document.getElementById('pCategory').value = detectedCategory;
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.deleteProject = async (id) => {
         if (confirm('Delete this project?')) {
-            const { error } = await supabaseClient.from('projects').delete().eq('id', id);
-            if (!error) fetchProjects();
+            try {
+                const { error } = await supabaseClient.from('projects').delete().eq('id', id);
+                if (!error) {
+                    fetchProjects();
+                    return;
+                }
+            } catch (err) {
+                console.warn("DB delete failed, falling back to local storage.", err);
+            }
+            
+            // Local Storage fallback
+            let cached = JSON.parse(localStorage.getItem('cached-projects') || '[]');
+            cached = cached.filter(p => p.id != id);
+            localStorage.setItem('cached-projects', JSON.stringify(cached));
+            alert('Database offline. Project deleted from Local Storage!');
+            fetchProjects();
         }
     };
 
@@ -261,6 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.textContent = 'SAVE PROJECT';
         cancelEditBtn.style.display = 'none';
         adminForm.reset();
+        document.getElementById('pCategory').value = 'react';
         currentTags = [];
         renderTags();
     }

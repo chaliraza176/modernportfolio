@@ -261,7 +261,77 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // === 7. Load Custom Projects from Supabase ===
+    // === 7. Project Categorization Helper ===
+    function getProjectCategory(tags, title) {
+        const categories = [];
+        const lowerTags = (tags || []).map(t => t.toLowerCase());
+        const lowerTitle = (title || '').toLowerCase();
+
+        // 1. Explicit Category Tags Check
+        if (lowerTags.includes('portfolio')) categories.push('portfolio');
+        if (lowerTags.includes('react')) categories.push('react');
+        if (lowerTags.includes('app') || lowerTags.includes('apps')) categories.push('apps');
+
+        // 2. Keyword/Implicit Tag matching (if not explicitly tagged above)
+        if (categories.length === 0) {
+            // Check Portfolio keywords
+            if (lowerTitle.includes('portfolio') || lowerTags.includes('animations') || lowerTags.includes('performance') || lowerTags.includes('ux/ui')) {
+                categories.push('portfolio');
+            }
+            // Check React keywords
+            if (lowerTags.some(t => t.includes('react') || t.includes('next.js') || t.includes('nextjs'))) {
+                categories.push('react');
+            }
+            // Check Apps keywords (Flutter, mobile, Android, iOS, app, native, adtech)
+            if (lowerTags.some(t => t.includes('flutter') || t.includes('dart') || t.includes('mobile') || t.includes('native') || t.includes('adtech')) || lowerTitle.includes('app') || lowerTitle.includes('doodler')) {
+                categories.push('apps');
+            }
+        }
+
+        // 3. Fallback
+        if (categories.length === 0) {
+            categories.push('portfolio');
+        }
+
+        return categories;
+    }
+
+    // === 8. Apply Category Filter Helper ===
+    function applyActiveFilter() {
+        const activeBtn = document.querySelector('.filter-btn.active');
+        if (!activeBtn) return;
+        const filterValue = activeBtn.getAttribute('data-filter');
+        const projectCards = document.querySelectorAll('.project-card');
+
+        projectCards.forEach(card => {
+            card.classList.remove('fade-in-animation');
+            const categoriesAttr = card.getAttribute('data-category') || '';
+            const categoriesList = categoriesAttr.split(' ');
+
+            if (filterValue === 'all' || categoriesList.includes(filterValue)) {
+                card.classList.remove('hidden');
+                // Trigger reflow to restart transition
+                void card.offsetWidth;
+                card.classList.add('fade-in-animation');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+    }
+
+    // Initialize Filter Button Listeners
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    if (filterButtons.length > 0) {
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyActiveFilter();
+            });
+        });
+    }
+
+    // === 9. Load Custom Projects from Supabase ===
     const projectsGrid = document.querySelector('.projects-grid');
     if (projectsGrid && typeof supabaseClient !== 'undefined') {
         const fetchProjects = async () => {
@@ -272,6 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (error) {
                 console.error('Error fetching projects:', error);
+                // Apply filter to hardcoded ones if fetch failed
+                applyActiveFilter();
                 return;
             }
 
@@ -282,11 +354,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const article = document.createElement('article');
                 article.className = 'project-card show-animation';
                 
+                // Determine categories dynamically
+                const projectCategories = getProjectCategory(project.tags, project.title);
+                article.setAttribute('data-category', projectCategories.join(' '));
+                
+                // Map legacy image URLs to the user's uploaded screenshots
+                let imageSrc = project.image;
+                if (imageSrc === 'assets/images/air-draw.png') {
+                    imageSrc = 'assets/images/Air Draw — Hand Gesture Doodler.PNG';
+                } else if (imageSrc === 'assets/images/adflow-pro.png') {
+                    imageSrc = 'assets/images/AdFlow Pro.PNG';
+                } else if (imageSrc === 'assets/images/nvysion-platform.png') {
+                    imageSrc = 'assets/images/Nvysion Platform.PNG';
+                }
+                
                 const tagsHTML = project.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
                 
                 article.innerHTML = `
                     <div class="project-image">
-                        <img src="${project.image}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
+                        <img src="${imageSrc}" alt="${project.title}" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/333333/ffffff?text=${encodeURIComponent(project.title)}'">
                     </div>
                     <div class="project-content">
                         <h3 class="project-title">${project.title}</h3>
@@ -303,8 +389,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 projectsGrid.appendChild(article);
             });
+
+            // Re-apply filter on newly added projects
+            applyActiveFilter();
         };
         fetchProjects();
+    } else {
+        // Fallback filter initialization for static HTML projects
+        applyActiveFilter();
     }
 
     console.log('Portfolio Main Initialized Successfully!');

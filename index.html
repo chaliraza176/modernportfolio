@@ -193,11 +193,20 @@
     <section id="projects" class="projects-section">
         <div class="container">
             <h2 class="section-title">My Projects</h2>
+            
+            <!-- Category Filter Tabs -->
+            <div class="projects-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="react">React</button>
+                <button class="filter-btn" data-filter="portfolio">Portfolio</button>
+                <button class="filter-btn" data-filter="apps">Apps</button>
+            </div>
+
             <div class="projects-grid">
                 <!-- Project 1 - Air Draw — Hand Gesture Doodler -->
-                <article class="project-card">
+                <article class="project-card" data-category="apps">
                     <div class="project-image">
-                        <img src="assets/images/air-draw.png" alt="Air Draw" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/3498db/ffffff?text=Air+Draw'">
+                        <img src="assets/images/Air Draw — Hand Gesture Doodler.PNG" alt="Air Draw" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/3498db/ffffff?text=Air+Draw'">
                     </div>
                     <div class="project-content">
                         <h3 class="project-title">Air Draw — Hand Gesture Doodler ✋🎨</h3>
@@ -218,9 +227,9 @@
                 </article>
 
                 <!-- Project 2 - AdFlow Pro -->
-                <article class="project-card">
+                <article class="project-card" data-category="react">
                     <div class="project-image">
-                        <img src="assets/images/adflow-pro.png" alt="AdFlow Pro" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/34495e/ffffff?text=AdFlow+Pro'">
+                        <img src="assets/images/AdFlow Pro.PNG" alt="AdFlow Pro" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/34495e/ffffff?text=AdFlow+Pro'">
                     </div>
                     <div class="project-content">
                         <h3 class="project-title">AdFlow Pro</h3>
@@ -241,7 +250,7 @@
                 </article>
 
                 <!-- Project 3 - Modern E-Commerce Store -->
-                <article class="project-card">
+                <article class="project-card" data-category="portfolio">
                     <div class="project-image">
                         <img src="assets/images/online-store.png" alt="Modern Online Store" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/a1c4fd/333333?text=Online+Store'">
                     </div>
@@ -264,9 +273,9 @@
                 </article>
 
                 <!-- Project 4 - Nvysion Platform -->
-                <article class="project-card">
+                <article class="project-card" data-category="react">
                     <div class="project-image">
-                        <img src="assets/images/nvysion-platform.png" alt="Nvysion Platform" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/30cfd0/ffffff?text=Nvysion+Platform'">
+                        <img src="assets/images/Nvysion Platform.PNG" alt="Nvysion Platform" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/30cfd0/ffffff?text=Nvysion+Platform'">
                     </div>
                     <div class="project-content">
                         <h3 class="project-title">Nvysion Platform</h3>
@@ -287,7 +296,7 @@
                 </article>
 
                 <!-- Project 5 - UniqVue AI App -->
-                <article class="project-card">
+                <article class="project-card" data-category="react apps">
                     <div class="project-image">
                         <img src="assets/images/uniqvue.png" alt="UniqVue AI" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/6b0f1a/ffffff?text=UniqVue+AI'">
                     </div>
@@ -310,7 +319,7 @@
                 </article>
 
                 <!-- Project 6 - Healthcare & Appointment App -->
-                <article class="project-card">
+                <article class="project-card" data-category="apps">
                     <div class="project-image">
                         <img src="assets/images/healthcare.png" alt="Doctor Appointment App" class="project-img" onerror="this.src='https://via.placeholder.com/500x300/3498db/ffffff?text=Doctor+App'">
                     </div>

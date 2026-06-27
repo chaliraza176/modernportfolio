@@ -635,6 +635,13 @@ body {
     background: var(--secondary-color);
 }
 
+.about-content {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 4rem;
+    align-items: center;
+}
+
 @media (max-width: 991px) {
     .about-content {
         grid-template-columns: 1fr;
@@ -740,9 +747,62 @@ body {
     z-index: 0;
 }
 
-.projects-section .container {
+.projects-filter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
     position: relative;
-    z-index: 1;
+    z-index: 10;
+}
+
+.filter-btn {
+    padding: 10px 24px;
+    background: rgba(var(--primary-rgb), 0.15);
+    border: 1px solid var(--border-color);
+    color: var(--text-gray);
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.filter-btn:hover {
+    color: var(--text-light);
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(var(--secondary-rgb), 0.2);
+}
+
+.filter-btn.active {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--text-light);
+    font-weight: 700;
+    box-shadow: 0 5px 20px rgba(var(--secondary-rgb), 0.4);
+}
+
+.project-card.hidden {
+    display: none !important;
+}
+
+.project-card.fade-in-animation {
+    animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .projects-grid {
