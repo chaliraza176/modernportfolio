@@ -127,7 +127,49 @@ body {
 }
 
 .color-picker-btn {
-    padding: 5px;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: pulsePaletteGlow 3s infinite ease-in-out;
+}
+
+.color-picker-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.color-picker-btn:hover {
+    background: var(--secondary-color);
+    color: var(--dark-bg) !important;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 20px var(--secondary-color);
+    transform: translateY(-2px) scale(1.1);
+}
+
+.color-picker-btn:hover i {
+    transform: rotate(360deg);
+}
+
+@keyframes pulsePaletteGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(var(--secondary-rgb), 0.3),
+                    inset 0 0 5px rgba(var(--secondary-rgb), 0.1);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(var(--secondary-rgb), 0.8),
+                    inset 0 0 8px rgba(var(--secondary-rgb), 0.3);
+        transform: scale(1.08);
+    }
 }
 
 /* Color Picker Modal */
